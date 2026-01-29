@@ -126,4 +126,4 @@ Or
 ## AUTHOR
 **Name**: Nicolas MARIE  
 **Track**: Python Developer – OpenClassrooms  
-**Project – Develop a web app using Django – December 2025**
+**Project – Develop a web app using Django – January 2025**
