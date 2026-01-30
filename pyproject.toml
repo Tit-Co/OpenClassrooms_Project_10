@@ -1,11 +1,19 @@
 [project]
 name = "openclassrooms-project-10"
 version = "0.1.0"
-description = "Add your description here"
+description = "Project 10 : Create a secured API RESTFUL using Django REST"
+authors = [
+    {name = "Nicolas MARIE",email = "nicolas.marie.nm@gmail.com"}
+]
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "django>=6.0.1",
-    "djangorestframework>=3.16.1",
-    "djangorestframework-simplejwt>=5.5.1",
+    "django (>=6.0.1,<7.0.0)",
+    "djangorestframework (>=3.16.1,<4.0.0)",
+    "djangorestframework-simplejwt (>=5.5.1,<6.0.0)"
 ]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

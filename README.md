@@ -55,33 +55,20 @@ The application must:
 `cd OpenClassrooms_Project_10`
 
 ### - Create a virtual environment and dependencies :
-### Option 1 - with [uv](https://docs.astral.sh/uv/)
+### Option with [Poetry](https://python-poetry.org/docs/)
 
-`uv` is an environment and dependencies manager.
-
-#### - Install environment and dependencies
-
-`uv sync`
-
-### Option 2 - with pip
+`Poetry` is a tool for dependency management and packaging in Python.
 
 #### - Install the virtual env :
-
-`python -m venv env`
+`py -3.14 -m venv env`
 
 #### - Activate the virtual env :
-`source env/bin/activate`  
-Or  
-`env\Scripts\activate` on Windows  
+`poetry env activate`
 
-### - Install dependencies 
-#### Option 1 - with [uv](https://docs.astral.sh/uv/)
+#### - Install the dependencies :
+`poetry install`
 
-`uv pip install -U -r requirements.txt`
-
-#### Option 2 - with pip
-
-`pip install -r requirements.txt` 
+Poetry will read the `poetry.lock` file to know which dependencies to install
 
 ---
 
@@ -118,7 +105,7 @@ Or
 
 ---
 
-![Python](https://img.shields.io/badge/python-3.13-blue.svg)
+![Python](https://img.shields.io/badge/python-3.14-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 ---
@@ -126,4 +113,4 @@ Or
 ## AUTHOR
 **Name**: Nicolas MARIE  
 **Track**: Python Developer – OpenClassrooms  
-**Project – Develop a web app using Django – January 2025**
+**Project – Develop a secured API RESTful using Django REST Framework – January 2025**
