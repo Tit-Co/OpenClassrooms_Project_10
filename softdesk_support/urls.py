@@ -21,11 +21,14 @@ from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from accounts.views import AdminUserViewSet, UserViewSet
-
+from contribution.views import ProjectViewSet, AdminProjectViewSet
 
 router = routers.SimpleRouter()
 router.register('user', UserViewSet, basename='user')
 router.register('admin/user', AdminUserViewSet, basename='admin-user')
+router.register('project', ProjectViewSet, basename='project')
+router.register('admin/project', AdminProjectViewSet, basename='admin-project')
+
 
 
 urlpatterns = [

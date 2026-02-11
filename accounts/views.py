@@ -1,5 +1,5 @@
 from rest_framework import status
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -60,7 +60,7 @@ class AdminUserViewSet(MultipleSerializerMixin, ModelViewSet):
         return Response()
 
 
-class CustomUserPermission(BasePermission):
+class IsOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.user.is_authenticated and request.user == obj:
             return True
@@ -79,9 +79,9 @@ class UserViewSet(MultipleSerializerMixin, ModelViewSet):
     list_serializer_class = UserListSerializer
 
     def get_permissions(self):
-        if self.action == 'create' or self.action == 'list':
+        if self.action in ['create', 'list']:
             return [AllowAny()]
-        return [CustomUserPermission()]
+        return [IsOwner()]
 
     def get_queryset(self):
         queryset = User.objects.filter(is_active=True)

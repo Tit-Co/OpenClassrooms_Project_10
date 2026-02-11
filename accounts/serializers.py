@@ -38,7 +38,10 @@ class UserCreateSerializer(ModelSerializer):
         instance.age = validated_data.get("age", instance.age)
         instance.can_be_contacted = validated_data.get("can_be_contacted", instance.can_be_contacted)
         instance.can_data_be_shared = validated_data.get("can_data_be_shared", instance.can_data_be_shared)
-        instance.password = validated_data.get("password", instance.password)
+
+        if "password" in validated_data:
+            instance.set_password(validated_data["password"])
+
         instance.save()
         return instance
 
