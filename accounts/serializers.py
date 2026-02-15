@@ -1,11 +1,15 @@
-from rest_framework.serializers import ModelSerializer, ValidationError, CharField
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.serializers import ModelSerializer, ValidationError, CharField, IntegerField
 
 from accounts.models import User
+from contribution.models import Project, Issue, Comment, Contributor
 
 
 class UserCreateSerializer(ModelSerializer):
     password = CharField(style={'input_type': 'password'}, write_only=True, label='Mot de passe')
     password2 = CharField(style={'input_type': 'password'}, write_only=True, label='Confirmer mot de passe')
+    age = IntegerField(style={'input_type': 'number'}, label='Age')
 
     class Meta:
         model = User
@@ -43,7 +47,21 @@ class UserCreateSerializer(ModelSerializer):
             instance.set_password(validated_data["password"])
 
         instance.save()
+
+        if not instance.can_data_be_shared:
+            self.update_user_datas(user=instance)
+
         return instance
+
+    @staticmethod
+    def update_user_datas(user):
+        contributors = Contributor.objects.filter(user=user, role='CONTRIBUTOR')
+        for project in Project.objects.all():
+            if project not in [contributor.project for contributor in contributors]:
+                issues = Issue.objects.filter(project=project, author=user)
+                for issue in issues:
+                    Comment.objects.filter(issue=issue, author=user).delete()
+                    issue.delete()
 
 
 class UserListSerializer(ModelSerializer):
