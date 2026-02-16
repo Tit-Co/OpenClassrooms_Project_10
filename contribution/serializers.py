@@ -49,6 +49,19 @@ class ProjectDetailSerializer(ModelSerializer):
         return serializer.data
 
 
+class ContributorListSerializer(ModelSerializer):
+    class Meta:
+        model = Contributor
+        fields = ['id', 'project', 'user']
+
+
+class ContributorDetailSerializer(ModelSerializer):
+
+    class Meta:
+        model = Contributor
+        fields = ['id', 'project', 'user', 'role']
+
+
 class IssueCreateSerializer(ModelSerializer):
     class Meta:
         model = Issue
@@ -108,9 +121,10 @@ class IssueDetailSerializer(ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if 'project' not in kwargs['context']['request'].get_full_path():
-            self.comments = SerializerMethodField()
-            self.fields['comments'] = self.comments
+        if kwargs:
+            if 'project' not in kwargs['context']['request'].get_full_path():
+                self.comments = SerializerMethodField()
+                self.fields['comments'] = self.comments
 
 
 class CommentCreateSerializer(ModelSerializer):

@@ -9,7 +9,8 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from contribution.models import Project, Contributor, Issue, Comment
 from contribution.serializers import (ProjectCreateSerializer, ProjectDetailSerializer, ProjectListSerializer,
                                       IssueCreateSerializer, IssueDetailSerializer, IssueListSerializer,
-                                      CommentCreateSerializer, CommentListSerializer, CommentDetailSerializer)
+                                      CommentCreateSerializer, CommentListSerializer, CommentDetailSerializer,
+                                      ContributorDetailSerializer, ContributorListSerializer)
 
 
 class MultipleSerializerMixin:
@@ -35,48 +36,57 @@ class CustomPermissionOrAdmin(BasePermission):
     edit_methods = ("PUT", "PATCH", "DELETE")
 
     def has_permission(self, request, view):
-        AUTHENTICATED = bool(request.user and request.user.is_authenticated)
+        IS_AUTHENTICATED = bool(request.user and request.user.is_authenticated)
 
         if request.user.is_superuser:
             return True
 
         if request.method == "GET":
             if view.action == "list":
-                return AUTHENTICATED
+                return IS_AUTHENTICATED
 
             if view.action == "retrieve":
                 if "project_pk" in view.kwargs:
                     project = Project.objects.get(id=view.kwargs["project_pk"])
+                elif "issue_pk" in view.kwargs:
+                    project = Issue.objects.get(id=view.kwargs["issue_pk"]).project
                 else:
-                    project = Issue.objects.get(id=view.kwargs['pk']).project
+                    try:
+                        project = Project.objects.get(id=view.kwargs["pk"])
+                    except:
+                        project = Issue.objects.get(id=view.kwargs["pk"]).project
 
-                return AUTHENTICATED  and request.user in project.contributors.all()
+                return IS_AUTHENTICATED  and request.user in project.contributors.all()
 
         if request.method == "POST":
             if view.action == "unsubscribe":
                 project = Project.objects.get(id=view.kwargs['pk'])
 
-                return AUTHENTICATED and request.user in project.contributors.all()
+                return IS_AUTHENTICATED and request.user in project.contributors.all()
 
             elif view.action == "subscribe" or view.action == "create":
-                return AUTHENTICATED
+                return IS_AUTHENTICATED
 
         if request.method not in self.edit_methods and view.action is not None:
-            project = None
             if view.action == "issue":
+                print("ici")
                 if 'project_pk' in view.kwargs:
                     project = Project.objects.get(id=view.kwargs['project_pk'])
                 else:
                     project = Project.objects.get(id=view.kwargs['pk'])
 
+                return IS_AUTHENTICATED and request.user in project.contributors.all()
+
+            elif view.action == "contributor":
+                return IS_AUTHENTICATED
+
             elif view.action == "comment":
                 if 'project_pk' in view.kwargs:
                     return False
-
                 issue = Issue.objects.get(id=view.kwargs['pk'])
                 project = issue.project
 
-            return AUTHENTICATED and request.user in project.contributors.all()
+                return IS_AUTHENTICATED and request.user in project.contributors.all()
 
         if request.method in self.edit_methods:
             if "project_pk" in view.kwargs:
@@ -84,14 +94,19 @@ class CustomPermissionOrAdmin(BasePermission):
                     uuid = view.kwargs['pk']
                     comment = Comment.objects.get(uuid=uuid)
 
-                    return AUTHENTICATED and request.user == comment.author
+                    return IS_AUTHENTICATED and request.user == comment.author
 
                 issue_id = view.kwargs['pk']
                 issue = Issue.objects.get(id=issue_id)
-                return AUTHENTICATED and request.user == issue.author
+                project = issue.project
+                if request.method == "PATCH":
+                    return IS_AUTHENTICATED and (request.user == issue.author or
+                                                 (request.user == issue.attribution and request.user in project.contributors.all()))
+
+                return IS_AUTHENTICATED and request.user == issue.author
 
             project = Project.objects.get(id=view.kwargs['pk'])
-            return AUTHENTICATED and request.user == project.author
+            return IS_AUTHENTICATED and request.user == project.author
 
         return False
 
@@ -138,11 +153,17 @@ class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
         return queryset
 
     def get_serializer_class(self):
+
         if self.action == 'issue':
             if self.request.method == 'POST':
                 return IssueCreateSerializer
             elif self.request.method == 'GET':
                 return IssueDetailSerializer
+
+        elif self.action == 'contributor':
+            if self.request.method == 'GET':
+                return ContributorListSerializer
+
         return super().get_serializer_class()
 
     @action(detail=True, methods=['POST'], permission_classes=[IsAdminUser])
@@ -211,6 +232,67 @@ class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['get'])
+    def contributor(self, request, pk=None):
+        project = self.get_object()
+        contributors = Contributor.objects.filter(project=project)
+        serializer = self.get_serializer(contributors, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CustomContributorPermissionOrAdmin(BasePermission):
+
+    def has_permission(self, request, view):
+        AUTHENTICATED = bool(request.user and request.user.is_authenticated)
+
+        if request.user.is_superuser:
+            return True
+
+        if request.method == "GET":
+            if view.action == "list" or view.action == "retrieve":
+                return AUTHENTICATED
+
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_superuser:
+            return True
+
+        if request.method == "GET":
+            return True
+
+        return False
+
+
+
+class ContributorViewSet(MultipleSerializerMixin, ModelViewSet):
+    serializer_class = ProjectListSerializer
+    detail_serializer_class = ProjectDetailSerializer
+    list_serializer_class = ProjectListSerializer
+
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [CustomContributorPermissionOrAdmin]
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Contributor.objects.all()
+
+        queryset = Contributor.objects.filter()
+        contributor_id = self.request.GET.get('contributor_id')
+        if contributor_id is not None:
+            queryset = queryset.filter(id=contributor_id)
+
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return ContributorListSerializer
+
+        elif self.action == 'retrieve':
+            return ContributorDetailSerializer
+
+        return super().get_serializer_class()
 
 
 class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
@@ -293,3 +375,14 @@ class CommentViewSet(MultipleSerializerMixin, ModelViewSet):
             queryset = queryset.filter(id=comment_uuid)
 
         return queryset
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CommentCreateSerializer
+        elif self.request.method == 'GET':
+            if self.action == 'list':
+                return CommentListSerializer
+            elif self.action == 'retrieve':
+                return CommentDetailSerializer
+
+        return super().get_serializer_class()
