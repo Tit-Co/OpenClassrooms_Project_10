@@ -1,3 +1,4 @@
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.serializers import ModelSerializer, SerializerMethodField, ValidationError
 
 from contribution.models import Project, Contributor, Issue, Comment
@@ -81,24 +82,18 @@ class IssueCreateSerializer(ModelSerializer):
 
         return super().to_internal_value(data)
 
-    def create(self, validated_data):
-        try:
-            project = self.context['project']
-            author = self.context['request'].user
 
-            issue = Issue.objects.create(
-                name=validated_data['name'],
-                priority=validated_data['priority'],
-                status=validated_data['status'],
-                attribution=validated_data['attribution'],
-                balise=validated_data['balise'],
-                project=project,
-                author=author)
+    def update(self, instance, validated_data):
+        request = self.context.get("request")
 
-            return issue
+        if request.user == instance.attribution and request.user != instance.author:
 
-        except KeyError:
-            raise ValidationError("Le projet n'existe pas.")
+            if set(validated_data.keys()) != {"status"}:
+                raise PermissionDenied(
+                    "Vous ne pouvez modifier que le statut."
+                )
+
+        return super().update(instance, validated_data)
 
 
 class IssueListSerializer(ModelSerializer):
@@ -131,18 +126,6 @@ class CommentCreateSerializer(ModelSerializer):
     class Meta:
         model = Comment
         fields = ['uuid', 'description', 'link', 'created_time']
-
-    def create(self, validated_data):
-        user = self.context['request'].user
-        issue = self.context['issue']
-
-        comment = Comment.objects.create(
-            description = validated_data['description'],
-            author = user,
-            issue = issue,
-            link = validated_data['link'])
-
-        return comment
 
 
 class CommentListSerializer(ModelSerializer):

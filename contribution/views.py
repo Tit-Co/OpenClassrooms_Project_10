@@ -1,6 +1,7 @@
 from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, BasePermission, IsAdminUser, SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -35,102 +36,80 @@ class MultipleSerializerMixin:
 class CustomPermissionOrAdmin(BasePermission):
     edit_methods = ("PUT", "PATCH", "DELETE")
 
+    @staticmethod
+    def _is_authenticated(user):
+        return bool(user and user.is_authenticated)
+
+    @staticmethod
+    def _is_contributor(user, project):
+        return user in project.contributors.all()
+
+    @staticmethod
+    def _is_project_author(user, project):
+        return user == project.author
+
+    @staticmethod
+    def _is_issue_author(user, issue):
+        return user == issue.author
+
+    @staticmethod
+    def _is_comment_author(user, comment):
+        return user == comment.author
+
+    @staticmethod
+    def _is_assigned(user, issue):
+        return user == issue.attribution
+
+    @staticmethod
+    def _get_project(obj):
+        if hasattr(obj, "project"):
+            return obj.project
+
+        if hasattr(obj, "issue"):
+            return obj.issue.project
+
+        return obj
+
+
     def has_permission(self, request, view):
-        IS_AUTHENTICATED = bool(request.user and request.user.is_authenticated)
+        if not request.user or not self._is_authenticated(request.user):
+            return False
 
-        if request.user.is_superuser:
-            return True
+        if view.action == "create" and "project_pk" in view.kwargs:
+            project = Project.objects.get(id=view.kwargs["project_pk"])
+            return self._is_contributor(request.user, project)
 
-        if request.method == "GET":
-            if view.action == "list":
-                return IS_AUTHENTICATED
+        if view.action == "create" and "issue_pk" in view.kwargs:
+            project = Issue.objects.get(id=view.kwargs["issue_pk"]).project
+            return self._is_contributor(request.user, project)
 
-            if view.action == "retrieve":
-                if "project_pk" in view.kwargs:
-                    project = Project.objects.get(id=view.kwargs["project_pk"])
-                elif "issue_pk" in view.kwargs:
-                    project = Issue.objects.get(id=view.kwargs["issue_pk"]).project
-                else:
-                    try:
-                        project = Project.objects.get(id=view.kwargs["pk"])
-                    except:
-                        project = Issue.objects.get(id=view.kwargs["pk"]).project
+        if view.action == "unsubscribe" and "pk" in view.kwargs:
+            project = Project.objects.get(id=view.kwargs["pk"])
+            return self._is_contributor(request.user, project)
 
-                return IS_AUTHENTICATED  and request.user in project.contributors.all()
-
-        if request.method == "POST":
-            if view.action == "unsubscribe":
-                project = Project.objects.get(id=view.kwargs['pk'])
-
-                return IS_AUTHENTICATED and request.user in project.contributors.all()
-
-            elif view.action == "subscribe" or view.action == "create":
-                return IS_AUTHENTICATED
-
-        if request.method not in self.edit_methods and view.action is not None:
-            if view.action == "issue":
-                print("ici")
-                if 'project_pk' in view.kwargs:
-                    project = Project.objects.get(id=view.kwargs['project_pk'])
-                else:
-                    project = Project.objects.get(id=view.kwargs['pk'])
-
-                return IS_AUTHENTICATED and request.user in project.contributors.all()
-
-            elif view.action == "contributor":
-                return IS_AUTHENTICATED
-
-            elif view.action == "comment":
-                if 'project_pk' in view.kwargs:
-                    return False
-                issue = Issue.objects.get(id=view.kwargs['pk'])
-                project = issue.project
-
-                return IS_AUTHENTICATED and request.user in project.contributors.all()
-
-        if request.method in self.edit_methods:
-            if "project_pk" in view.kwargs:
-                if "issue_pk" in view.kwargs:
-                    uuid = view.kwargs['pk']
-                    comment = Comment.objects.get(uuid=uuid)
-
-                    return IS_AUTHENTICATED and request.user == comment.author
-
-                issue_id = view.kwargs['pk']
-                issue = Issue.objects.get(id=issue_id)
-                project = issue.project
-                if request.method == "PATCH":
-                    return IS_AUTHENTICATED and (request.user == issue.author or
-                                                 (request.user == issue.attribution and request.user in project.contributors.all()))
-
-                return IS_AUTHENTICATED and request.user == issue.author
-
-            project = Project.objects.get(id=view.kwargs['pk'])
-            return IS_AUTHENTICATED and request.user == project.author
-
-        return False
+        return True
 
     def has_object_permission(self, request, view, obj):
         if request.user.is_superuser:
             return True
 
-        if obj.author == request.user and request.method in self.edit_methods:
+        if view.action in ["subscribe"]:
             return True
 
-        if view.action == "subscribe":
+        if request.method in SAFE_METHODS or view.action in ["unsubscribe"]:
+            return self._is_contributor(request.user, self._get_project(obj))
+
+        if (self._is_project_author(request.user, self._get_project(obj))
+                or self._is_issue_author(request.user, obj)
+                or self._is_comment_author(request.user, obj)):
             return True
 
-        if hasattr(obj, "contributors"):
-            return request.user in obj.contributors.all()
-
-        if hasattr(obj, "project"):
-            return request.user in obj.project.contributors.all()
-
-        if hasattr(obj, "issue"):
-            return request.user in obj.issue.project.contributors.all()
+        if request.method in ["PUT", "PATCH"]:
+            if type(obj) == Issue:
+                if self._is_assigned(request.user, obj):
+                    return True
 
         return False
-
 
 class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
     serializer_class = ProjectCreateSerializer
@@ -145,22 +124,17 @@ class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
         if self.request.user.is_superuser:
             return Project.objects.all()
 
-        queryset = Project.objects.filter(active=True)
-        project_id = self.request.GET.get('project_id')
-        if project_id is not None:
-            queryset = queryset.filter(id=project_id)
+        pk = self.kwargs.get('pk')
+        if not pk or self.action == "subscribe":
+            queryset = Project.objects.filter(active=True)
+        else:
+            queryset = Project.objects.filter(contributors=self.request.user, active=True)
+            queryset = queryset.filter(id=pk)
 
         return queryset
 
     def get_serializer_class(self):
-
-        if self.action == 'issue':
-            if self.request.method == 'POST':
-                return IssueCreateSerializer
-            elif self.request.method == 'GET':
-                return IssueDetailSerializer
-
-        elif self.action == 'contributor':
+        if self.action == 'contributor':
             if self.request.method == 'GET':
                 return ContributorListSerializer
 
@@ -218,40 +192,19 @@ class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
         return Response({'status': 'Succés'}, status=status.HTTP_200_OK)
 
 
-    @action(detail=True, methods=['get', 'post'])
-    def issue(self, request, pk=None):
-        project = self.get_object()
-        if request.method == 'GET':
-            issues = Issue.objects.filter(project=project, active=True)
-            serializer = self.get_serializer(issues, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        else:
-            serializer = self.get_serializer(data=request.data, context={'request': request, 'project': project})
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @action(detail=True, methods=['get'])
-    def contributor(self, request, pk=None):
-        project = self.get_object()
-        contributors = Contributor.objects.filter(project=project)
-        serializer = self.get_serializer(contributors, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
 class CustomContributorPermissionOrAdmin(BasePermission):
 
-    def has_permission(self, request, view):
-        AUTHENTICATED = bool(request.user and request.user.is_authenticated)
+    @staticmethod
+    def is_authenticated(request):
+        return bool(request.user and request.user.is_authenticated)
 
+    def has_permission(self, request, view):
         if request.user.is_superuser:
             return True
 
         if request.method == "GET":
-            if view.action == "list" or view.action == "retrieve":
-                return AUTHENTICATED
+            if view.action in ["list", "retrieve"]:
+                return self.is_authenticated(request)
 
         return False
 
@@ -265,7 +218,6 @@ class CustomContributorPermissionOrAdmin(BasePermission):
         return False
 
 
-
 class ContributorViewSet(MultipleSerializerMixin, ModelViewSet):
     serializer_class = ProjectListSerializer
     detail_serializer_class = ProjectDetailSerializer
@@ -276,9 +228,9 @@ class ContributorViewSet(MultipleSerializerMixin, ModelViewSet):
 
     def get_queryset(self):
         if self.request.user.is_superuser:
-            return Contributor.objects.all()
+            return Contributor.objects.all().order_by('id')
 
-        queryset = Contributor.objects.filter()
+        queryset = Contributor.objects.filter().order_by('id')
         contributor_id = self.request.GET.get('contributor_id')
         if contributor_id is not None:
             queryset = queryset.filter(id=contributor_id)
@@ -315,12 +267,23 @@ class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
     def get_queryset(self):
         if self.request.user.is_superuser:
             return Issue.objects.all()
-        queryset = Issue.objects.filter(active=True)
-        issue_id = self.request.GET.get('issue_id')
-        if issue_id is not None:
-            queryset = queryset.filter(id=issue_id)
+        project_pk = self.kwargs.get('project_pk')
+        if project_pk:
+            queryset = Issue.objects.filter(project__pk=project_pk, active=True)
+        else:
+            queryset = Issue.objects.filter(active=True)
 
         return queryset
+
+    def perform_create(self, serializer):
+        try:
+            project = Project.objects.get(pk=self.kwargs["project_pk"])
+            serializer.save(
+                project=project,
+                author=self.request.user
+            )
+        except KeyError:
+            raise ValidationError("Aucun projet spécifié.")
 
     @action(detail=True, methods=['POST'], permission_classes=[IsAdminUser])
     def disable(self, request, pk):
@@ -342,22 +305,6 @@ class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
         issue.enable()
         return Response()
 
-    @action(detail=True, methods=['get', 'post'])
-    def comment(self, request, project_pk=None, pk=None):
-        issue = self.get_object()
-        self.check_object_permissions(request, issue)
-        if request.method == 'GET':
-            comments = Comment.objects.filter(issue=issue, active=True)
-            serializer = self.get_serializer(comments, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        else:
-            serializer = self.get_serializer(data=request.data, context={'request': request, 'issue': issue})
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class CommentViewSet(MultipleSerializerMixin, ModelViewSet):
     serializer_class = CommentCreateSerializer
@@ -369,7 +316,8 @@ class CommentViewSet(MultipleSerializerMixin, ModelViewSet):
     permission_classes = [CustomPermissionOrAdmin]
 
     def get_queryset(self):
-        queryset = Comment.objects.filter(active=True)
+        issue_pk = self.kwargs.get('issue_pk')
+        queryset = Comment.objects.filter(issue__id=issue_pk, active=True)
         comment_uuid = self.request.GET.get('comment_uuid')
         if comment_uuid is not None:
             queryset = queryset.filter(id=comment_uuid)
@@ -386,3 +334,10 @@ class CommentViewSet(MultipleSerializerMixin, ModelViewSet):
                 return CommentDetailSerializer
 
         return super().get_serializer_class()
+
+    def perform_create(self, serializer):
+        issue = Issue.objects.get(pk=self.kwargs["issue_pk"])
+        serializer.save(
+            issue=issue,
+            author=self.request.user
+        )

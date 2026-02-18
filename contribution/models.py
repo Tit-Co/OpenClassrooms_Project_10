@@ -8,7 +8,7 @@ from django.conf import settings
 class Project(models.Model):
     name = models.CharField(max_length=30, unique=False, null=False, blank=False, verbose_name='Nom du projet')
 
-    description = models.TextField(max_length=200, unique=False, null=True, blank=True, verbose_name='Description')
+    description = models.TextField(max_length=500, unique=False, null=True, blank=True, verbose_name='Description')
 
     active = models.BooleanField(default=True, verbose_name='Actif')
 
@@ -120,11 +120,6 @@ class Issue(models.Model):
                               verbose_name='Balise')
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name='Projet')
-
-    # comments = models.ManyToManyField(to=settings.AUTH_USER_MODEL,
-    #                                   through='Comment',
-    #                                   related_name='comments',
-    #                                   verbose_name='Commentaires')
 
     created_time = models.DateTimeField(default=datetime.now, blank=True, verbose_name='Date de creation')
 

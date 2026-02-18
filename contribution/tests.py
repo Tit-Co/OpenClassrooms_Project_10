@@ -1,3 +1,5 @@
+from keyword import kwlist
+
 from django.urls import reverse_lazy, reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -30,6 +32,8 @@ class ProjectsTestCase(APITestCase):
                                              active=True,
                                              type='FRONT-END',
                                              author=cls.user)
+
+        cls.contributor_1 = Contributor.objects.create(project=cls.project, user=cls.user, role='AUTHOR')
 
         cls.project_2 = Project.objects.create(name='Projet 2',
                                                description='Un super projet 1',
@@ -105,7 +109,7 @@ class TestProject(ProjectsTestCase):
                                          'type': 'IOS',
                                          'active': True,
                                          'author': 1})
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(Project.objects.count(), project_count)
 
     def test_delete(self):
@@ -174,8 +178,8 @@ class ContributorsTestCase(APITestCase):
         return [
             {
                 'id': contributor.pk,
-                'user': contributor.user.id,
-                'project' : project.id
+                'project': project.id,
+                'user': contributor.user.id
             } for contributor in Contributor.objects.filter(project=project)
         ]
 
@@ -216,8 +220,14 @@ class TestContributor(ContributorsTestCase):
                          headers={'Authorization': 'Bearer '+tokens['access']})
         response = self.client.get(self.url_project_1_contributors,
                                    headers={'Authorization': 'Bearer '+tokens['access']})
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), self.get_contributor_list_data(self.project))
+        expected = (
+                self.get_contributor_list_data(self.project)
+                + self.get_contributor_list_data(self.project_2)
+        )
+
+        self.assertCountEqual(response.json()["results"], expected)
 
     def test_detail(self):
         tokens = self.get_tokens_for_user(self.user_2)
@@ -238,7 +248,7 @@ class TestContributor(ContributorsTestCase):
     def test_non_contributor_access(self):
         tokens = self.get_tokens_for_user(self.user_3)
         response = self.client.get(self.url_project_1_detail, headers={'Authorization': 'Bearer ' + tokens['access']})
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         self.client.post(self.url_project_1_subscribe,
                          headers={'Authorization': 'Bearer ' + tokens['access']})

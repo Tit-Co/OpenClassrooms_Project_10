@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from accounts.models import User
 from accounts.serializers import UserCreateSerializer, UserDetailSerializer, UserListSerializer
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly, BasePermission, AllowAny
+from rest_framework.permissions import IsAdminUser, BasePermission
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
@@ -31,9 +31,11 @@ class MultipleSerializerMixin:
 class CustomUserPermissionOrAdmin(BasePermission):
     edit_methods = ("PUT", "PATCH", "DELETE")
 
-    def has_permission(self, request, view):
-        AUTHENTICATED = bool(request.user and request.user.is_authenticated)
+    @staticmethod
+    def _is_authenticated(user):
+        return bool(user and user.is_authenticated)
 
+    def has_permission(self, request, view):
         if request.user.is_superuser:
             return True
 
@@ -42,7 +44,7 @@ class CustomUserPermissionOrAdmin(BasePermission):
                 return True
 
             if view.action == "retrieve":
-                return AUTHENTICATED
+                return self._is_authenticated(request.user)
 
         if request.method == "POST":
             if view.action == "create":
@@ -51,13 +53,14 @@ class CustomUserPermissionOrAdmin(BasePermission):
         if request.method in self.edit_methods:
             user_id = view.kwargs['pk']
             user = User.objects.get(id=user_id)
-            return AUTHENTICATED and (request.user == user or request.user.is_superuser)
+            return self._is_authenticated(user) and (request.user == user or request.user.is_superuser)
 
         return False
 
     def has_object_permission(self, request, view, obj):
         if request.user.is_authenticated and (request.user == obj or request.user.is_superuser):
             return True
+
         return False
 
 
