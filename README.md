@@ -113,8 +113,7 @@ The application must:
 
 ## PROJECT STRUCTURE
 <p align="center">
-    <img src="docs/structure_1.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
-    <img src="docs/structure_2.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+    <img src="docs/structure.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
 </p>
 
 ---
