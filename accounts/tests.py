@@ -57,11 +57,11 @@ class TestUser(AccountsTestCase):
     def test_create(self):
         user_count = User.objects.count()
         response = self.client.post(path=self.url, data={'username': 'another_user',
-                                                    'age': 28,
-                                                    'can_be_contacted': False,
-                                                    'can_data_be_shared': False,
-                                                    'password': 'sc7_Smn70',
-                                                    'password2': 'sc7_Smn70'})
+                                                         'age': 28,
+                                                         'can_be_contacted': False,
+                                                         'can_data_be_shared': False,
+                                                         'password': 'sc7_Smn70',
+                                                         'password2': 'sc7_Smn70'})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(User.objects.count(), user_count + 1)
 

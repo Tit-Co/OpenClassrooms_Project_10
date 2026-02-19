@@ -12,7 +12,10 @@ dependencies = [
     "djangorestframework (>=3.16.1,<4.0.0)",
     "djangorestframework-simplejwt (>=5.5.1,<6.0.0)",
     "drf-nested-routers (>=0.95.0,<0.96.0)",
-    "mypy (>=1.19.1,<2.0.0)"
+    "mypy (>=1.19.1,<2.0.0)",
+    "flake8 (>=7.3.0,<8.0.0)",
+    "flake8-report (>=0.1.0a1,<0.2.0)",
+    "flake8-html (>=0.4.3,<0.5.0)"
 ]
 
 

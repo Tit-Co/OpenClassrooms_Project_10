@@ -17,16 +17,16 @@ class MultipleSerializerMixin:
     list_serializer_class = None
 
     def get_serializer_class(self):
-            if self.action == "create":
-                return self.create_serializer_class
-            elif self.action == "retrieve" and self.detail_serializer_class is not None:
-                return self.detail_serializer_class
-            elif self.action == "list":
-                return self.list_serializer_class
-            elif self.action == "update":
-                return self.create_serializer_class
+        if self.action == "create":
+            return self.create_serializer_class
+        elif self.action == "retrieve" and self.detail_serializer_class is not None:
+            return self.detail_serializer_class
+        elif self.action == "list":
+            return self.list_serializer_class
+        elif self.action == "update":
+            return self.create_serializer_class
 
-            return super().get_serializer_class()
+        return super().get_serializer_class()
 
 
 class UserViewSet(MultipleSerializerMixin, ModelViewSet):

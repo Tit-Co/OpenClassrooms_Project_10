@@ -37,7 +37,7 @@ class Project(models.Model):
         return self.name
 
     def disable(self):
-        if not self.active :
+        if not self.active:
             return
         self.active = False
         issues = Issue.objects.filter(project=self)
@@ -127,7 +127,7 @@ class Issue(models.Model):
         return self.name
 
     def disable(self):
-        if not self.active :
+        if not self.active:
             return
         self.active = False
         comments = Comment.objects.filter(issue=self)
@@ -167,7 +167,7 @@ class Comment(models.Model):
         return self.description
 
     def disable(self):
-        if not self.active :
+        if not self.active:
             return
         self.active = False
         self.save()

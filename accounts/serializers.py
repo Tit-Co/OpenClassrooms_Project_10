@@ -36,9 +36,7 @@ class UserCreateSerializer(ModelSerializer):
     def validate_age(value: int) -> int:
         if value is not None and value < 15:
             raise ValidationError(
-                {
-                'age': "Vous devez avoir au moins 15 ans."
-                })
+                {'age': "Vous devez avoir au moins 15 ans."})
         return value
 
     def create(self, validated_data: Any) -> User:

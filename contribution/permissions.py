@@ -39,7 +39,7 @@ class CustomPermissionOrAdmin(BasePermission):
         return user == issue.attribution
 
     @staticmethod
-    def _get_project(obj: Project|Issue|Comment|Contributor) -> Project:
+    def _get_project(obj: Project | Issue | Comment | Contributor) -> Project:
         if hasattr(obj, "project"):
             return obj.project
 
@@ -48,8 +48,7 @@ class CustomPermissionOrAdmin(BasePermission):
 
         return obj
 
-
-    def has_permission(self, request: HttpRequest, view: ProjectViewSet|IssueViewSet|CommentViewSet) -> bool:
+    def has_permission(self, request: HttpRequest, view: ProjectViewSet | IssueViewSet | CommentViewSet) -> bool:
         if not request.user or not self._is_authenticated(request.user):
             return False
 
@@ -67,8 +66,8 @@ class CustomPermissionOrAdmin(BasePermission):
 
         return True
 
-    def has_object_permission(self, request: HttpRequest, view: ProjectViewSet|IssueViewSet|CommentViewSet,
-                              obj: Project|Issue|Comment) -> bool:
+    def has_object_permission(self, request: HttpRequest, view: ProjectViewSet | IssueViewSet | CommentViewSet,
+                              obj: Project | Issue | Comment) -> bool:
         if request.user.is_superuser:
             return True
 
@@ -84,7 +83,7 @@ class CustomPermissionOrAdmin(BasePermission):
             return True
 
         if request.method in ["PUT", "PATCH"]:
-            if type(obj) == Issue:
+            if type(obj) is Issue:
                 if self._is_assigned(user=request.user, issue=obj):
                     return True
 

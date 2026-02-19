@@ -1,5 +1,3 @@
-from keyword import kwlist
-
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.urls import reverse_lazy, reverse
 from rest_framework import status
@@ -8,25 +6,25 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
 
 from accounts.models import User
-from contribution.models import Project, Contributor, Issue, Comment
+from contribution.models import Project, Contributor
 
 
 class ProjectsTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = User.objects.create(username='Benoit',
-                                                         is_active=True,
-                                                         age=46,
-                                                         can_be_contacted=True,
-                                                         can_data_be_shared=False,
-                                                         password='tc2_Std29')
+                                       is_active=True,
+                                       age=46,
+                                       can_be_contacted=True,
+                                       can_data_be_shared=False,
+                                       password='tc2_Std29')
 
         cls.user_2 = User.objects.create(username='andrew',
-                                                           age=18,
-                                                           is_active=True,
-                                                           can_be_contacted=False,
-                                                           can_data_be_shared=False,
-                                                           password='tc1_Std18')
+                                         age=18,
+                                         is_active=True,
+                                         can_be_contacted=False,
+                                         can_data_be_shared=False,
+                                         password='tc1_Std18')
 
         cls.project = Project.objects.create(name='Projet 1',
                                              description='Un super projet 1',
@@ -138,18 +136,18 @@ class ContributorsTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = User.objects.create(username='Benoit',
-                                                         is_active=True,
-                                                         age=46,
-                                                         can_be_contacted=True,
-                                                         can_data_be_shared=False,
-                                                         password='tc2_Std29')
+                                       is_active=True,
+                                       age=46,
+                                       can_be_contacted=True,
+                                       can_data_be_shared=False,
+                                       password='tc2_Std29')
 
         cls.user_2 = User.objects.create(username='andrew',
-                                                           age=18,
-                                                           is_active=True,
-                                                           can_be_contacted=False,
-                                                           can_data_be_shared=False,
-                                                           password='tc1_Std18')
+                                         age=18,
+                                         is_active=True,
+                                         can_be_contacted=False,
+                                         can_data_be_shared=False,
+                                         password='tc1_Std18')
 
         cls.user_3 = User.objects.create(username='martine',
                                          age=35,
@@ -233,14 +231,9 @@ class TestContributor(ContributorsTestCase):
     def test_detail(self):
         tokens = self.get_tokens_for_user(user=self.user_2)
         response = self.client.get(path=self.url_project_1_contributor_1_detail,
-                        headers={'Authorization': 'Bearer '+tokens['access']})
+                                   headers={'Authorization': 'Bearer '+tokens['access']})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), {
-            "id": 1,
-            "project": 1,
-            "user": 1,
-            "role": "AUTHOR"
-        })
+        self.assertEqual(response.json(), {"id": 1, "project": 1, "user": 1, "role": "AUTHOR"})
 
     def test_access_without_token(self):
         response = self.client.get(path=self.url_project_1_contributor_1_detail)
@@ -248,12 +241,14 @@ class TestContributor(ContributorsTestCase):
 
     def test_non_contributor_access(self):
         tokens = self.get_tokens_for_user(user=self.user_3)
-        response = self.client.get(path=self.url_project_1_detail, headers={'Authorization': 'Bearer ' + tokens['access']})
+        response = self.client.get(path=self.url_project_1_detail,
+                                   headers={'Authorization': 'Bearer ' + tokens['access']})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         self.client.post(path=self.url_project_1_subscribe,
                          headers={'Authorization': 'Bearer ' + tokens['access']})
-        response = self.client.get(path=self.url_project_1_detail, headers={'Authorization': 'Bearer ' + tokens['access']})
+        response = self.client.get(path=self.url_project_1_detail,
+                                   headers={'Authorization': 'Bearer ' + tokens['access']})
         data = response.json()
         data['created_time'] = data['created_time'][:19]
         self.assertEqual(response.status_code, status.HTTP_200_OK)

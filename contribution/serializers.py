@@ -22,10 +22,10 @@ class ProjectCreateSerializer(ModelSerializer):
     def create(self, validated_data: Any) -> Project:
         user = self.context['request'].user
         project = Project.objects.create(
-            name = validated_data['name'],
-            description = validated_data['description'],
-            type = validated_data['type'],
-            author = user)
+            name=validated_data['name'],
+            description=validated_data['description'],
+            type=validated_data['type'],
+            author=user)
 
         Contributor.objects.create(user=user, project=project, role='AUTHOR')
 
@@ -83,7 +83,6 @@ class IssueCreateSerializer(ModelSerializer):
             data['balise'] = data['balise'].strip().upper()
 
         return super().to_internal_value(data)
-
 
     def update(self, instance: Issue, validated_data: Any) -> Issue:
         request = self.context.get("request")

@@ -189,7 +189,7 @@ Poetry will read the `poetry.lock` file to know which dependencies to install
 
 ## EXAMPLES
 
-- Log in
+- Authentication
 <p align="center">
     <img src="docs/screenshots/homepage_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
 </p>
@@ -200,7 +200,7 @@ Poetry will read the `poetry.lock` file to know which dependencies to install
 
 - Flake 8 report
 <p align="center">
-    <img src="docs/screenshots/flake8_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+    <img src="docs/flake8_report.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
 </p>
 
 ---
