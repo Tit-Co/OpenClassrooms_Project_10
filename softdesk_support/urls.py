@@ -19,11 +19,11 @@ from django.urls import path, include
 
 from rest_framework import routers
 from rest_framework_nested.routers import NestedDefaultRouter
-
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from accounts.views import UserViewSet
 from contribution.views import ProjectViewSet, IssueViewSet, CommentViewSet, ContributorViewSet
+
 
 router = routers.SimpleRouter()
 router.register('user', UserViewSet, basename='user')

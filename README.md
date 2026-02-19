@@ -1,4 +1,4 @@
-# Django app - OpenClassrooms Project 09
+# Django app - OpenClassrooms Project 10
 **Develop a web application using Django**
 
 ---
