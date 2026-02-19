@@ -17,17 +17,24 @@ class UserCreateSerializer(ModelSerializer):
         if self.instance is None and User.objects.filter(username=data['username']).exists():
             raise ValidationError({'username': "Ce nom d'utilisateur existe déjà."})
 
+        if data.get('password') != data.get('password2'):
+            raise ValidationError({'password2': "Les mots de passe ne concordent pas."})
+
         return data
 
     @staticmethod
-    def validate_password2(data):
-        if data['password'] != data['password2']:
-            raise ValidationError({'password2': "Les mots de passe ne concordent pas."})
+    def validate_password(value):
+        if len(value) < 8:
+            raise ValidationError(
+                "Le mot de passe doit contenir au moins 8 caractères."
+            )
+        return value
 
     @staticmethod
     def validate_age(value):
         if value is not None and value < 15:
             raise ValidationError({'age': "Vous devez avoir au moins 15 ans."})
+        return value
 
     def create(self, validated_data):
         user = User.objects.create_user(
