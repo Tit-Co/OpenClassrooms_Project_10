@@ -18,6 +18,82 @@ The application must:
 
 ---
 
+## PROJECT STRUCTURE
+<p align="center">
+    <img src="docs/structure.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+</p>
+
+---
+
+## INSTALLATION
+
+### - Clone the repository :
+`git clone https://github.com/Tit-Co/OpenClassrooms_Project_10.git`
+
+### - Navigate into the project directory :
+`cd OpenClassrooms_Project_10`
+
+### - Create a virtual environment and dependencies :
+
+### Option 1 - with [uv](https://docs.astral.sh/uv/)
+
+`uv` is an environment and dependencies manager.
+
+#### - Install environment and dependencies
+
+`uv sync`
+
+### Option 2 - with pip
+
+#### - Install the virtual env :
+
+`python -m venv env`
+
+#### - Activate the virtual env :
+`source env/bin/activate`  
+Or  
+`env\Scripts\activate` on Windows  
+
+
+### Option 3 with [Poetry](https://python-poetry.org/docs/)
+
+`Poetry` is a tool for dependency management and packaging in Python.
+
+#### - Install the virtual env :
+`py -3.14 -m venv env`
+
+#### - Activate the virtual env :
+`poetry env activate`
+
+### - Install dependencies 
+#### Option 1 - with [uv](https://docs.astral.sh/uv/)
+`uv pip install -U -r requirements.txt`
+
+#### Option 2 - with pip
+`pip install -r requirements.txt` 
+
+#### Option 2 - with [Poetry](https://python-poetry.org/docs/)
+`poetry install`
+
+Poetry will read the `poetry.lock` file to know which dependencies to install
+
+---
+
+## USAGE
+
+### Launching server
+- Open a terminal
+- Go to project folder - example : `cd softdesk_support`
+- If needed, make migrations and execute them : 
+  - `python manage.py makemigrations`
+  - `python manage.py migrate`
+- Launch the Django server : `python manage.py runserver`
+
+### Launching the website
+- Open a web browser
+- And type the URL : `http://127.0.0.1:8000/api/`
+---
+
 ## EXPLANATIONS OF WHAT THE API DOES AND HOW TO USE IT
 
 ### <u>User management</u>
@@ -109,82 +185,6 @@ The application must:
   - With GET method on the endpoint, you will have access to the existing project contributors short list of the given project, if you are authenticated and have subscribed to the project first.
   - All others methods are not allowed.
 
----
-
-## PROJECT STRUCTURE
-<p align="center">
-    <img src="docs/structure.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
-</p>
-
----
-
-## INSTALLATION
-
-### - Clone the repository :
-`git clone https://github.com/Tit-Co/OpenClassrooms_Project_10.git`
-
-### - Navigate into the project directory :
-`cd OpenClassrooms_Project_10`
-
-### - Create a virtual environment and dependencies :
-
-### Option 1 - with [uv](https://docs.astral.sh/uv/)
-
-`uv` is an environment and dependencies manager.
-
-#### - Install environment and dependencies
-
-`uv sync`
-
-### Option 2 - with pip
-
-#### - Install the virtual env :
-
-`python -m venv env`
-
-#### - Activate the virtual env :
-`source env/bin/activate`  
-Or  
-`env\Scripts\activate` on Windows  
-
-
-### Option 3 with [Poetry](https://python-poetry.org/docs/)
-
-`Poetry` is a tool for dependency management and packaging in Python.
-
-#### - Install the virtual env :
-`py -3.14 -m venv env`
-
-#### - Activate the virtual env :
-`poetry env activate`
-
-### - Install dependencies 
-#### Option 1 - with [uv](https://docs.astral.sh/uv/)
-`uv pip install -U -r requirements.txt`
-
-#### Option 2 - with pip
-`pip install -r requirements.txt` 
-
-#### Option 2 - with [Poetry](https://python-poetry.org/docs/)
-`poetry install`
-
-Poetry will read the `poetry.lock` file to know which dependencies to install
-
----
-
-## USAGE
-
-### Launching server
-- Open a terminal
-- Go to project folder - example : `cd softdesk_support`
-- If needed, make migrations and execute them : 
-  - `python manage.py makemigrations`
-  - `python manage.py migrate`
-- Launch the Django server : `python manage.py runserver`
-
-### Launching the website
-- Open a web browser
-- And type the URL : `http://127.0.0.1:8000/api/`
 ---
 
 ## EXAMPLES

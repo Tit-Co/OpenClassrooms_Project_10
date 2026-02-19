@@ -2,6 +2,7 @@ env/
 .venv/
 
 .idea/
+db.sqlite3
 
 # Temp files
 __pycache__
