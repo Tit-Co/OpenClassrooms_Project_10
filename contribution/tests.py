@@ -1,5 +1,6 @@
 from keyword import kwlist
 
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.urls import reverse_lazy, reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -42,7 +43,7 @@ class ProjectsTestCase(APITestCase):
                                                author=cls.user_2)
 
     @staticmethod
-    def get_project_list_data(projects):
+    def get_project_list_data(projects: list[Project]):
         return [
             {
                 'id': project.pk,
@@ -55,27 +56,27 @@ class TestProject(ProjectsTestCase):
     url = reverse_lazy('project-list')
 
     @staticmethod
-    def get_tokens_for_user(user):
+    def get_tokens_for_user(user: AbstractBaseUser):
         if not user.is_active:
             raise AuthenticationFailed("User is not active")
 
-        refresh = RefreshToken.for_user(user)
+        refresh = RefreshToken.for_user(user=user)
         return {
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         }
 
     def test_list(self):
-        tokens = self.get_tokens_for_user(self.project.author)
-        response = self.client.get(self.url, headers={'Authorization': 'Bearer '+tokens['access']})
+        tokens = self.get_tokens_for_user(user=self.project.author)
+        response = self.client.get(path=self.url, headers={'Authorization': 'Bearer '+tokens['access']})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()['results'], self.get_project_list_data([self.project,
                                                                                  self.project_2]))
 
     def test_create(self):
         project_count = Project.objects.count()
-        tokens = self.get_tokens_for_user(self.project.author)
-        response = self.client.post(self.url,
+        tokens = self.get_tokens_for_user(user=self.project.author)
+        response = self.client.post(path=self.url,
                                     headers={'Authorization': 'Bearer '+tokens['access']},
                                     data={'name': 'Nouveau projet',
                                           'description': 'Une description du projet nouveau',
@@ -87,9 +88,9 @@ class TestProject(ProjectsTestCase):
         self.assertEqual(Project.objects.count(), project_count + 1)
 
     def test_update(self):
-        tokens = self.get_tokens_for_user(self.project.author)
+        tokens = self.get_tokens_for_user(user=self.project.author)
         project_count = Project.objects.count()
-        response = self.client.put(reverse('project-detail', kwargs={'pk': self.project.pk}),
+        response = self.client.put(path=reverse('project-detail', kwargs={'pk': self.project.pk}),
                                    headers={'Authorization': 'Bearer '+tokens['access']},
                                    data={'name': 'Nouveau grand projet',
                                          'description': 'Une description du nouveau projet',
@@ -102,7 +103,7 @@ class TestProject(ProjectsTestCase):
     def test_a_user_update_b_project(self):
         tokens = self.get_tokens_for_user(self.project_2.author)
         project_count = Project.objects.count()
-        response = self.client.put(reverse('project-detail', kwargs={'pk': self.project.pk}),
+        response = self.client.put(path=reverse('project-detail', kwargs={'pk': self.project.pk}),
                                    headers={'Authorization': 'Bearer '+tokens['access']},
                                    data={'name': 'Nouveau grand projet',
                                          'description': 'Une description du nouveau projet',
@@ -115,7 +116,7 @@ class TestProject(ProjectsTestCase):
     def test_delete(self):
         tokens = self.get_tokens_for_user(self.user_2)
         user_count = User.objects.count()
-        response = self.client.delete(reverse('user-detail', kwargs={'pk': self.project_2.pk}),
+        response = self.client.delete(path=reverse('user-detail', kwargs={'pk': self.project_2.pk}),
                                       headers={'Authorization': 'Bearer '+tokens['access']})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(User.objects.count(), user_count - 1)
@@ -123,7 +124,7 @@ class TestProject(ProjectsTestCase):
 
     def test_update_without_token(self):
         project_count = Project.objects.count()
-        response = self.client.put(reverse('project-detail', kwargs={'pk': self.project.pk}),
+        response = self.client.put(path=reverse('project-detail', kwargs={'pk': self.project.pk}),
                                    data={'name': 'Nouveau grand projet',
                                          'description': 'Une description du nouveau projet',
                                          'type': 'IOS',
@@ -174,17 +175,17 @@ class ContributorsTestCase(APITestCase):
         cls.contributor_2 = Contributor.objects.create(project=cls.project_2, user=cls.user_2, role='AUTHOR')
 
     @staticmethod
-    def get_contributor_list_data(project):
+    def get_contributor_list_data(project: Project) -> list[dict]:
         return [
             {
                 'id': contributor.pk,
-                'project': project.id,
+                'project': project.pk,
                 'user': contributor.user.id
             } for contributor in Contributor.objects.filter(project=project)
         ]
 
     @staticmethod
-    def get_projet(project):
+    def get_project(project: Project) -> dict:
         return {
             'id': project.pk,
             'name': project.name,
@@ -204,21 +205,21 @@ class TestContributor(ContributorsTestCase):
     url_project_1_subscribe = reverse("project-subscribe", kwargs={"pk": 1})
 
     @staticmethod
-    def get_tokens_for_user(user):
+    def get_tokens_for_user(user: AbstractBaseUser):
         if not user.is_active:
             raise AuthenticationFailed("User is not active")
 
-        refresh = RefreshToken.for_user(user)
+        refresh = RefreshToken.for_user(user=user)
         return {
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         }
 
     def test_list(self):
-        tokens = self.get_tokens_for_user(self.user_2)
-        self.client.post(self.url_project_1_subscribe,
+        tokens = self.get_tokens_for_user(user=self.user_2)
+        self.client.post(path=self.url_project_1_subscribe,
                          headers={'Authorization': 'Bearer '+tokens['access']})
-        response = self.client.get(self.url_project_1_contributors,
+        response = self.client.get(path=self.url_project_1_contributors,
                                    headers={'Authorization': 'Bearer '+tokens['access']})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -230,8 +231,8 @@ class TestContributor(ContributorsTestCase):
         self.assertCountEqual(response.json()["results"], expected)
 
     def test_detail(self):
-        tokens = self.get_tokens_for_user(self.user_2)
-        response = self.client.get(self.url_project_1_contributor_1_detail,
+        tokens = self.get_tokens_for_user(user=self.user_2)
+        response = self.client.get(path=self.url_project_1_contributor_1_detail,
                         headers={'Authorization': 'Bearer '+tokens['access']})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), {
@@ -242,18 +243,18 @@ class TestContributor(ContributorsTestCase):
         })
 
     def test_access_without_token(self):
-        response = self.client.get(self.url_project_1_contributor_1_detail)
+        response = self.client.get(path=self.url_project_1_contributor_1_detail)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_non_contributor_access(self):
-        tokens = self.get_tokens_for_user(self.user_3)
-        response = self.client.get(self.url_project_1_detail, headers={'Authorization': 'Bearer ' + tokens['access']})
+        tokens = self.get_tokens_for_user(user=self.user_3)
+        response = self.client.get(path=self.url_project_1_detail, headers={'Authorization': 'Bearer ' + tokens['access']})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-        self.client.post(self.url_project_1_subscribe,
+        self.client.post(path=self.url_project_1_subscribe,
                          headers={'Authorization': 'Bearer ' + tokens['access']})
-        response = self.client.get(self.url_project_1_detail, headers={'Authorization': 'Bearer ' + tokens['access']})
+        response = self.client.get(path=self.url_project_1_detail, headers={'Authorization': 'Bearer ' + tokens['access']})
         data = response.json()
         data['created_time'] = data['created_time'][:19]
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(data, self.get_projet(self.project))
+        self.assertEqual(data, self.get_project(project=self.project))

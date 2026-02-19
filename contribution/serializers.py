@@ -1,5 +1,7 @@
+from typing import Any
+
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.serializers import ModelSerializer, SerializerMethodField, ValidationError
+from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
 from contribution.models import Project, Contributor, Issue, Comment
 
@@ -9,7 +11,7 @@ class ProjectCreateSerializer(ModelSerializer):
         model = Project
         fields = ('name', 'description', 'type')
 
-    def to_internal_value(self, data):
+    def to_internal_value(self, data: Any) -> Any:
         data = data.copy()
 
         if 'type' in data:
@@ -17,7 +19,7 @@ class ProjectCreateSerializer(ModelSerializer):
 
         return super().to_internal_value(data)
 
-    def create(self, validated_data):
+    def create(self, validated_data: Any) -> Project:
         user = self.context['request'].user
         project = Project.objects.create(
             name = validated_data['name'],
@@ -44,7 +46,7 @@ class ProjectDetailSerializer(ModelSerializer):
         fields = ['id', 'name', 'description', 'type', 'author', 'created_time', 'issues']
 
     @staticmethod
-    def get_issues(instance):
+    def get_issues(instance: Issue) -> list:
         queryset = Issue.objects.filter(project=instance, active=True)
         serializer = IssueDetailSerializer(queryset, many=True)
         return serializer.data
@@ -68,7 +70,7 @@ class IssueCreateSerializer(ModelSerializer):
         model = Issue
         fields = ['name', 'priority', 'status', 'attribution', 'balise']
 
-    def to_internal_value(self, data):
+    def to_internal_value(self, data: Any) -> Any:
         data = data.copy()
 
         if 'priority' in data:
@@ -83,7 +85,7 @@ class IssueCreateSerializer(ModelSerializer):
         return super().to_internal_value(data)
 
 
-    def update(self, instance, validated_data):
+    def update(self, instance: Issue, validated_data: Any) -> Issue:
         request = self.context.get("request")
 
         if request.user == instance.attribution and request.user != instance.author:
@@ -109,7 +111,7 @@ class IssueDetailSerializer(ModelSerializer):
         fields = ['id', 'name', 'priority', 'status', 'author', 'attribution', 'balise', 'created_time']
 
     @staticmethod
-    def get_comments(instance):
+    def get_comments(instance: Issue) -> list:
         queryset = Comment.objects.filter(issue=instance, active=True)
         serializer = CommentDetailSerializer(queryset, many=True)
         return serializer.data

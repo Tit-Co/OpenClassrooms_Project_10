@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework.serializers import ModelSerializer, ValidationError, CharField, IntegerField
 
 from accounts.models import User
@@ -13,7 +15,7 @@ class UserCreateSerializer(ModelSerializer):
         model = User
         fields = ['id', 'username', 'age', 'can_be_contacted', 'can_data_be_shared', 'password', 'password2']
 
-    def validate(self, data):
+    def validate(self, data: Any) -> Any:
         if self.instance is None and User.objects.filter(username=data['username']).exists():
             raise ValidationError({'username': "Ce nom d'utilisateur existe déjà."})
 
@@ -23,7 +25,7 @@ class UserCreateSerializer(ModelSerializer):
         return data
 
     @staticmethod
-    def validate_password(value):
+    def validate_password(value: str) -> str:
         if len(value) < 8:
             raise ValidationError(
                 "Le mot de passe doit contenir au moins 8 caractères."
@@ -31,12 +33,15 @@ class UserCreateSerializer(ModelSerializer):
         return value
 
     @staticmethod
-    def validate_age(value):
+    def validate_age(value: int) -> int:
         if value is not None and value < 15:
-            raise ValidationError({'age': "Vous devez avoir au moins 15 ans."})
+            raise ValidationError(
+                {
+                'age': "Vous devez avoir au moins 15 ans."
+                })
         return value
 
-    def create(self, validated_data):
+    def create(self, validated_data: Any) -> User:
         user = User.objects.create_user(
             username=validated_data['username'],
             age=validated_data['age'],
@@ -46,7 +51,7 @@ class UserCreateSerializer(ModelSerializer):
         )
         return user
 
-    def update(self, instance, validated_data):
+    def update(self, instance: User, validated_data: Any) -> User:
         instance.username = validated_data.get("username", instance.username)
         instance.age = validated_data.get("age", instance.age)
         instance.can_be_contacted = validated_data.get("can_be_contacted", instance.can_be_contacted)
@@ -63,7 +68,7 @@ class UserCreateSerializer(ModelSerializer):
         return instance
 
     @staticmethod
-    def update_user_datas(user):
+    def update_user_datas(user: User):
         contributors = Contributor.objects.filter(user=user, role='CONTRIBUTOR')
         for project in Project.objects.all():
             if project not in [contributor.project for contributor in contributors]:

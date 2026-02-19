@@ -11,7 +11,8 @@ dependencies = [
     "django (>=6.0.1,<7.0.0)",
     "djangorestframework (>=3.16.1,<4.0.0)",
     "djangorestframework-simplejwt (>=5.5.1,<6.0.0)",
-    "drf-nested-routers (>=0.95.0,<0.96.0)"
+    "drf-nested-routers (>=0.95.0,<0.96.0)",
+    "mypy (>=1.19.1,<2.0.0)"
 ]
 
 

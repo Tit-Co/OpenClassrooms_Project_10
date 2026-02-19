@@ -1,4 +1,5 @@
 from django.db import IntegrityError
+from django.http import HttpRequest
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -65,7 +66,7 @@ class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
         return super().get_serializer_class()
 
     @action(detail=True, methods=['POST'], permission_classes=[IsAdminUser])
-    def disable(self, request, pk):
+    def disable(self, request: HttpRequest, pk: int) -> Response:
         try:
             project = Project.objects.get(pk=pk)
         except Project.DoesNotExist:
@@ -75,7 +76,7 @@ class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
         return Response({'status': 'Succés'}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['POST'], permission_classes=[IsAdminUser])
-    def enable(self, request, pk):
+    def enable(self, request: HttpRequest, pk: int) -> Response:
         try:
             project = Project.objects.get(pk=pk)
         except Project.DoesNotExist:
@@ -85,7 +86,7 @@ class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
         return Response({'status': 'Succés'}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'])
-    def subscribe(self, request, pk):
+    def subscribe(self, request: HttpRequest, pk: int) -> Response:
         project = self.get_object()
         user = request.user
 
@@ -98,7 +99,7 @@ class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
 
 
     @action(detail=True, methods=['post'])
-    def unsubscribe(self, request, pk):
+    def unsubscribe(self, request: HttpRequest, pk: int) -> Response:
         project = self.get_object()
         user = request.user
 

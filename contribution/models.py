@@ -56,9 +56,9 @@ class Project(models.Model):
 
 
 class Contributor(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Utilisateur')
+    user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Utilisateur')
 
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name='Projet')
+    project = models.ForeignKey(to=Project, on_delete=models.CASCADE, verbose_name='Projet')
 
     ROLES = (
         ('AUTHOR', 'Auteur'),
@@ -119,7 +119,7 @@ class Issue(models.Model):
                               choices=BALISE_CHOICES,
                               verbose_name='Balise')
 
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name='Projet')
+    project = models.ForeignKey(to=Project, on_delete=models.CASCADE, verbose_name='Projet')
 
     created_time = models.DateTimeField(default=datetime.now, blank=True, verbose_name='Date de creation')
 
@@ -152,9 +152,9 @@ class Comment(models.Model):
 
     description = models.TextField(max_length=500, unique=False, null=True, blank=True, verbose_name='Description')
 
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Auteur')
+    author = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Auteur')
 
-    issue = models.ForeignKey(Issue, on_delete=models.CASCADE, verbose_name='Issue')
+    issue = models.ForeignKey(to=Issue, on_delete=models.CASCADE, verbose_name='Issue')
 
     link = models.URLField(max_length=200, null=False, blank=False, verbose_name='Link')
 
