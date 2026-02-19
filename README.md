@@ -204,6 +204,7 @@ Poetry will read the `poetry.lock` file to know which dependencies to install
 </p>
 
 **Type the line below in the terminal to generate another report with [flake8-html](https://pypi.org/project/flake8-html/) tool :**
+
 ` flake8 --format=html --htmldir=flake8-report --max-line-length=119 --extend-exclude=env/,*/migrations/*`
 
 ---
