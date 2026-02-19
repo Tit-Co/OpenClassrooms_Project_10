@@ -39,7 +39,7 @@ The application must:
             "can_be_contacted": true,
             "can_data_be_shared": false
             }
-           ```
+        ```
 
 ### <u>Projects management</u>
 - Endpoint to use : `http://127.0.0.1:8000/api/project/`
