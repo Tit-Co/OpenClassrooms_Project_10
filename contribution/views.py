@@ -172,10 +172,10 @@ class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
         issue_pk = self.kwargs.get('pk')
 
         if project_pk:
-            return Issue.objects.filter(project__pk=project_pk, active=True).order_by('-id')
+            return Issue.objects.filter(project__pk=project_pk, active=True)
 
         elif issue_pk:
-            return Issue.objects.filter(pk=issue_pk, active=True).order_by('-id')
+            return Issue.objects.filter(pk=issue_pk, active=True)
 
         return Issue.objects.filter(project__contributor__user=self.request.user,
                                     active=True).distinct().order_by('-id')
@@ -225,7 +225,7 @@ class CommentViewSet(MultipleSerializerMixin, ModelViewSet):
         queryset = Comment.objects.filter(issue__id=issue_pk, active=True).order_by('-created_time')
         comment_uuid = self.request.GET.get('comment_uuid')
         if comment_uuid is not None:
-            queryset = queryset.filter(id=comment_uuid).order_by('-created_time')
+            queryset = queryset.filter(id=comment_uuid)
 
         return queryset
 
