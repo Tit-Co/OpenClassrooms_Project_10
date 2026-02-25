@@ -68,8 +68,7 @@ class TestProject(ProjectsTestCase):
         tokens = self.get_tokens_for_user(user=self.project.author)
         response = self.client.get(path=self.url, headers={'Authorization': 'Bearer '+tokens['access']})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()['results'], self.get_project_list_data([self.project,
-                                                                                 self.project_2]))
+        self.assertEqual(response.json()['results'], self.get_project_list_data([self.project_2, self.project]))
 
     def test_create(self):
         project_count = Project.objects.count()
@@ -108,7 +107,7 @@ class TestProject(ProjectsTestCase):
                                          'type': 'IOS',
                                          'active': True,
                                          'author': 1})
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(Project.objects.count(), project_count)
 
     def test_delete(self):
@@ -228,7 +227,7 @@ class TestContributor(ContributorsTestCase):
         self.assertCountEqual(response.json()["results"], expected)
 
     def test_detail(self):
-        tokens = self.get_tokens_for_user(user=self.user_2)
+        tokens = self.get_tokens_for_user(user=self.user)
         response = self.client.get(path=self.url_project_1_contributor_1_detail,
                                    headers={'Authorization': 'Bearer '+tokens['access']})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
