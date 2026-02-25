@@ -40,7 +40,6 @@ class CustomPermissionOrAdmin(BasePermission):
 
     @staticmethod
     def _get_project_from_obj(obj: Project | Issue | Comment | Contributor) -> Project:
-        print("ici")
         if hasattr(obj, "project"):
             return obj.project
 
@@ -118,13 +117,37 @@ class CustomContributorPermissionOrAdmin(BasePermission):
     def is_authenticated(user: AbstractBaseUser) -> bool:
         return bool(user and user.is_authenticated)
 
+    @staticmethod
+    def _is_contributor(user: AbstractBaseUser, project: Project) -> bool:
+        return user in project.contributors.all()
+
+    @staticmethod
+    def _get_project_from_view(view: ContributorViewSet) -> Project | None:
+        kwargs = view.kwargs
+        basename = view.basename
+
+        if basename == "project":
+            if "pk" in kwargs:
+                return Project.objects.get(pk=kwargs["pk"])
+
+        if basename == "contributor":
+            if "project_pk" in kwargs:
+                return Project.objects.get(pk=kwargs["project_pk"])
+            if "pk" in kwargs:
+                contributor = Contributor.objects.select_related("project").get(pk=kwargs["pk"])
+                return contributor.project
+
+        return None
+
     def has_permission(self, request: HttpRequest, view: ContributorViewSet):
         if request.user.is_superuser:
             return True
 
         if request.method == "GET":
             if view.action in ["list", "retrieve"]:
-                return self.is_authenticated(user=request.user)
+                project = self._get_project_from_view(view=view)
+                if project:
+                    return self._is_contributor(user=request.user, project=project)
 
         return False
 
