@@ -1,5 +1,5 @@
 # Django app - OpenClassrooms Project 10
-**Develop a web application using Django**
+**Create a secured API RESTful using Django REST**
 
 ---
 
@@ -187,14 +187,55 @@ Poetry will read the `poetry.lock` file to know which dependencies to install
 
 ---
 
-## EXAMPLES
+## REQUESTS EXAMPLES
 
 - Authentication
 <p align="center">
-    <img src="docs/screenshots/homepage_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+    <img src="docs/screenshots/authentication_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
 </p>
 
+- GET user
+<p align="center">
+    <img src="docs/screenshots/get_user_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+    <img src="docs/screenshots/get_user_detail_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+</p>
 
+- PATCH user
+<p align="center">
+    <img src="docs/screenshots/patch_user_rgpd_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+</p>
+
+- GET project
+<p align="center">
+    <img src="docs/screenshots/get_project_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+    <img src="docs/screenshots/get_project_detail_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+</p>
+
+- GET issue
+<p align="center">
+    <img src="docs/screenshots/get_project_issue_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+    <img src="docs/screenshots/get_project_issue_detail_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+    <img src="docs/screenshots/get_issue_detail_without_comments_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+    <img src="docs/screenshots/get_issue_detail_with_comments_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+</p>
+
+- GET comment
+<p align="center">
+    <img src="docs/screenshots/get_issue_comment_detail_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+</p>
+
+- POST comment
+<p align="center">
+    <img src="docs/screenshots/post_comment_on_issue_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+</p>
+
+- POST subscribe or unsubscribe
+<p align="center">
+    <img src="docs/screenshots/get_project_detail_no_contributor.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+    <img src="docs/screenshots/post_subscribe_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+    <img src="docs/screenshots/get_project_detail_after_subscribe_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+    <img src="docs/screenshots/post_unsubscribe_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+</p>
 
 ## PEP 8 CONVENTIONS
 

@@ -49,14 +49,7 @@ class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
         if self.request.user.is_superuser:
             return Project.objects.all()
 
-        pk = self.kwargs.get('pk')
-        if not pk or self.action == "subscribe":
-            queryset = Project.objects.filter(active=True)
-        else:
-            queryset = Project.objects.filter(contributors=self.request.user, active=True)
-            queryset = queryset.filter(id=pk)
-
-        return queryset
+        return Project.objects.filter(active=True).order_by('-id')
 
     def get_serializer_class(self):
         if self.action == 'contributor':
@@ -109,9 +102,9 @@ class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
 
         if not user.can_data_be_shared:
             issues = Issue.objects.filter(project=project)
-            for issue in issues:
-                Comment.objects.filter(author=user, issue=issue).delete()
-            Issue.objects.filter(project=project, author=user).delete()
+            Comment.objects.filter(author=user, issue__in=issues).delete()
+            issues.filter(author=user).delete()
+            Project.objects.filter(id=project.pk, author=user).delete()
 
         return Response({'status': 'Succés'}, status=status.HTTP_200_OK)
 
@@ -126,9 +119,10 @@ class ContributorViewSet(MultipleSerializerMixin, ModelViewSet):
 
     def get_queryset(self):
         if self.request.user.is_superuser:
-            return Contributor.objects.all().order_by('id')
+            return Contributor.objects.all().order_by('-id')
 
-        queryset = Contributor.objects.filter().order_by('id')
+        project = Project.objects.get(id=self.kwargs.get('project_pk'))
+        queryset = Contributor.objects.filter(project=project).order_by('id')
         contributor_id = self.request.GET.get('contributor_id')
         if contributor_id is not None:
             queryset = queryset.filter(id=contributor_id)
@@ -162,16 +156,29 @@ class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
                 return CommentDetailSerializer
         return super().get_serializer_class()
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if 'project_pk' in self.kwargs:
+            context["project"] = Project.objects.get(pk=self.kwargs['project_pk'])
+        else:
+            context["project"] = None
+        return context
+
     def get_queryset(self):
         if self.request.user.is_superuser:
             return Issue.objects.all()
-        project_pk = self.kwargs.get('project_pk')
-        if project_pk:
-            queryset = Issue.objects.filter(project__pk=project_pk, active=True)
-        else:
-            queryset = Issue.objects.filter(active=True)
 
-        return queryset
+        project_pk = self.kwargs.get('project_pk')
+        issue_pk = self.kwargs.get('pk')
+
+        if project_pk:
+            return Issue.objects.filter(project__pk=project_pk, active=True).order_by('-id')
+
+        elif issue_pk:
+            return Issue.objects.filter(pk=issue_pk, active=True).order_by('-id')
+
+        return Issue.objects.filter(project__contributor__user=self.request.user,
+                                    active=True).distinct().order_by('-id')
 
     def perform_create(self, serializer):
         try:
@@ -215,10 +222,10 @@ class CommentViewSet(MultipleSerializerMixin, ModelViewSet):
 
     def get_queryset(self):
         issue_pk = self.kwargs.get('issue_pk')
-        queryset = Comment.objects.filter(issue__id=issue_pk, active=True)
+        queryset = Comment.objects.filter(issue__id=issue_pk, active=True).order_by('-created_time')
         comment_uuid = self.request.GET.get('comment_uuid')
         if comment_uuid is not None:
-            queryset = queryset.filter(id=comment_uuid)
+            queryset = queryset.filter(id=comment_uuid).order_by('-created_time')
 
         return queryset
 

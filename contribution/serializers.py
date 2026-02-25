@@ -1,6 +1,6 @@
 from typing import Any
 
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
 from contribution.models import Project, Contributor, Issue, Comment
@@ -84,6 +84,17 @@ class IssueCreateSerializer(ModelSerializer):
 
         return super().to_internal_value(data)
 
+    def validate(self, data: Any) -> Issue:
+        project = self.instance.project if self.instance else self.context["project"]
+        attribution = data.get('attribution')
+
+        if attribution:
+            if not Contributor.objects.filter(user=attribution, project=project).exists():
+                raise ValidationError(
+                    {'attribution': f"{attribution} n'est pas contributeur(rice) du projet {project}."})
+
+        return data
+
     def update(self, instance: Issue, validated_data: Any) -> Issue:
         request = self.context.get("request")
 
@@ -118,7 +129,7 @@ class IssueDetailSerializer(ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if kwargs:
-            if 'project' not in kwargs['context']['request'].get_full_path():
+            if kwargs['context'].get('project') is None:
                 self.comments = SerializerMethodField()
                 self.fields['comments'] = self.comments
 

@@ -67,13 +67,15 @@ class UserCreateSerializer(ModelSerializer):
 
     @staticmethod
     def update_user_datas(user: User):
-        contributors = Contributor.objects.filter(user=user, role='CONTRIBUTOR')
-        for project in Project.objects.all():
-            if project not in [contributor.project for contributor in contributors]:
-                issues = Issue.objects.filter(project=project, author=user)
-                for issue in issues:
-                    Comment.objects.filter(issue=issue, author=user).delete()
-                    issue.delete()
+        user_contributor_projects = Contributor.objects.filter(user=user).values_list('project_id', flat=True)
+
+        projects_to_clean = Project.objects.exclude(id__in=user_contributor_projects)
+
+        Comment.objects.filter(author=user, issue__project__in=projects_to_clean).delete()
+
+        Issue.objects.filter(author=user, project__in=projects_to_clean).delete()
+
+        Project.objects.filter(author=user, id__in=projects_to_clean).delete()
 
 
 class UserListSerializer(ModelSerializer):

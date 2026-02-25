@@ -160,9 +160,6 @@ class Comment(models.Model):
 
     created_time = models.DateTimeField(default=datetime.now, blank=True, verbose_name='Date de creation')
 
-    class Meta:
-        constraints = (models.UniqueConstraint(fields=['author', 'issue'], name='unique_comment'),)
-
     def __str__(self):
         return self.description
 
