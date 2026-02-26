@@ -89,7 +89,7 @@ Poetry will read the `poetry.lock` file to know which dependencies to install
   - `python manage.py migrate`
 - Launch the Django server : `python manage.py runserver`
 
-### Launching the website
+### Launching the API
 - Open a web browser
 - And type the URL : `http://127.0.0.1:8000/api/`
 ---
@@ -151,7 +151,7 @@ Poetry will read the `poetry.lock` file to know which dependencies to install
   - Example :
     ```
         {
-        "name": "Connexion utilisateur ne fonctionne pas",
+        "name": "User connexion crashes",
         "priority": "MEDIUM",
         "status": "TO DO",
         "attribution": 5,
