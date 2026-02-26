@@ -1,4 +1,4 @@
-# Django app - OpenClassrooms Project 10
+# Django API - OpenClassrooms Project 10
 **Create a secured API RESTful using Django REST**
 
 ---
