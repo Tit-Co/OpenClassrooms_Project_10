@@ -115,7 +115,7 @@ class IssueDetailSerializer(ModelSerializer):
         fields = super().get_fields()
 
         if self.context.get("project") is not None:
-            fields.pop("comments", None)
+            fields.pop("comments")
 
         return fields
 
