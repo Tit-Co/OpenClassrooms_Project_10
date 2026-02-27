@@ -61,12 +61,12 @@ class UserCreateSerializer(ModelSerializer):
         instance.save()
 
         if not instance.can_data_be_shared:
-            self.update_user_datas(user=instance)
+            self.update_user_data(user=instance)
 
         return instance
 
     @staticmethod
-    def update_user_datas(user: User):
+    def update_user_data(user: User):
         user_contributor_projects = Contributor.objects.filter(user=user).values_list('project_id', flat=True)
 
         projects_to_clean = Project.objects.exclude(id__in=user_contributor_projects)

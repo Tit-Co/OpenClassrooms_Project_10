@@ -34,7 +34,8 @@ class CustomUserPermissionOrAdmin(BasePermission):
         if request.method in self.edit_methods:
             user_id = view.kwargs['pk']
             user = User.objects.get(id=user_id)
-            return self._is_authenticated(user=user) and (request.user == user or request.user.is_superuser)
+            return (self._is_authenticated(user=user)
+                    and (request.user == user or request.user.is_superuser))
 
         return False
 

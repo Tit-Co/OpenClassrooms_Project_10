@@ -2,9 +2,11 @@ from typing import TYPE_CHECKING
 
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.http import HttpRequest
+from rest_framework.exceptions import PermissionDenied
 
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
+from accounts.models import User
 from contribution.models import Project, Issue, Comment, Contributor
 
 if TYPE_CHECKING:
@@ -49,7 +51,8 @@ class CustomPermissionOrAdmin(BasePermission):
         return obj
 
     @staticmethod
-    def _get_project_from_view(view: ProjectViewSet | IssueViewSet | CommentViewSet) -> Project | None:
+    def _get_project_from_view(view: ProjectViewSet | IssueViewSet | CommentViewSet) -> (Project
+                                                                                         | None):
         kwargs = view.kwargs
         basename = view.basename
 
@@ -74,19 +77,43 @@ class CustomPermissionOrAdmin(BasePermission):
 
         return None
 
-    def has_permission(self, request: HttpRequest, view: ProjectViewSet | IssueViewSet | CommentViewSet) -> bool:
+    @staticmethod
+    def _get_assigned_user_from_request(request: HttpRequest) -> User | None:
+        request_body_str = request.body.decode()
+
+        attribution = int(request_body_str.split("\"attribution\": ")[1][0])
+        if attribution:
+            print(f"attribution: {attribution}")
+            return User.objects.get(pk=attribution)
+        return None
+
+    def has_permission(self, request: HttpRequest,
+                       view: ProjectViewSet | IssueViewSet | CommentViewSet) -> bool:
         if not request.user or not self._is_authenticated(request.user):
             return False
 
-        if view.action in ["list", "retrieve", "create", "unsubscribe"]:
+        if view.action in ["list", "retrieve", "unsubscribe"]:
             project = self._get_project_from_view(view=view)
             if project:
                 return self._is_contributor(user=request.user, project=project)
 
+        if view.action == "create":
+            project = self._get_project_from_view(view=view)
+            if project and view.basename == "issue":
+                assigned_user = self._get_assigned_user_from_request(request)
+                if not self._is_contributor(user=assigned_user, project=project):
+                    raise PermissionDenied(
+                        {'attribution': f"{assigned_user} n'est pas contributeur(rice) du "
+                                        f"projet {project}."})
+
+                return self._is_contributor(user=request.user, project=project)
+
         return True
 
-    def has_object_permission(self, request: HttpRequest, view: ProjectViewSet | IssueViewSet | CommentViewSet,
+    def has_object_permission(self, request: HttpRequest,
+                              view: ProjectViewSet | IssueViewSet | CommentViewSet,
                               obj: Project | Issue | Comment) -> bool:
+
         if request.user.is_superuser:
             return True
 
@@ -103,10 +130,12 @@ class CustomPermissionOrAdmin(BasePermission):
                 or self._is_comment_author(user=request.user, comment=obj)):
             return True
 
-        if request.method in ["PUT", "PATCH"]:
-            if isinstance(obj, Issue):
-                if self._is_assigned(user=request.user, issue=obj):
-                    return True
+        if request.method in ["PATCH"]:
+            if (isinstance(obj, Issue)
+                    and self._is_assigned(user=request.user, issue=obj)
+                    and set(request.data.keys()) == {"status"}):
+                return True
+            raise PermissionDenied("Action non autorisée : vous ne pouvez modifier que le statut.")
 
         return False
 
@@ -151,7 +180,8 @@ class CustomContributorPermissionOrAdmin(BasePermission):
 
         return False
 
-    def has_object_permission(self, request: HttpRequest, view: ContributorViewSet, obj: Contributor) -> bool:
+    def has_object_permission(self, request: HttpRequest,
+                              view: ContributorViewSet, obj: Contributor) -> bool:
         if request.user.is_superuser:
             return True
 

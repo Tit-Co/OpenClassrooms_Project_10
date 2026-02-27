@@ -196,7 +196,7 @@ Poetry will read the `poetry.lock` file to know which dependencies to install
 
 - GET user
 <p align="center">
-    <img src="docs/screenshots/get_user_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+    <img src="docs/screenshots/get_users_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
     <img src="docs/screenshots/get_user_detail_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
 </p>
 
@@ -208,7 +208,6 @@ Poetry will read the `poetry.lock` file to know which dependencies to install
 - GET project
 <p align="center">
     <img src="docs/screenshots/get_project_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
-    <img src="docs/screenshots/get_project_detail_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
 </p>
 
 - GET issue

@@ -1,6 +1,5 @@
 from typing import Any
 
-from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
 from contribution.models import Project, Contributor, Issue, Comment
@@ -68,7 +67,7 @@ class ContributorDetailSerializer(ModelSerializer):
 class IssueCreateSerializer(ModelSerializer):
     class Meta:
         model = Issue
-        fields = ['name', 'priority', 'status', 'attribution', 'balise']
+        fields = ['name', 'priority', 'status', 'attribution', 'tag']
 
     def to_internal_value(self, data: Any) -> Any:
         data = data.copy()
@@ -79,33 +78,10 @@ class IssueCreateSerializer(ModelSerializer):
         if 'status' in data:
             data['status'] = data['status'].strip().upper()
 
-        if 'balise' in data:
-            data['balise'] = data['balise'].strip().upper()
+        if 'tag' in data:
+            data['tag'] = data['tag'].strip().upper()
 
         return super().to_internal_value(data)
-
-    def validate(self, data: Any) -> Issue:
-        project = self.instance.project if self.instance else self.context["project"]
-        attribution = data.get('attribution')
-
-        if attribution:
-            if not Contributor.objects.filter(user=attribution, project=project).exists():
-                raise ValidationError(
-                    {'attribution': f"{attribution} n'est pas contributeur(rice) du projet {project}."})
-
-        return data
-
-    def update(self, instance: Issue, validated_data: Any) -> Issue:
-        request = self.context.get("request")
-
-        if request.user == instance.attribution and request.user != instance.author:
-
-            if set(validated_data.keys()) != {"status"}:
-                raise PermissionDenied(
-                    "Vous ne pouvez modifier que le statut."
-                )
-
-        return super().update(instance, validated_data)
 
 
 class IssueListSerializer(ModelSerializer):
@@ -115,10 +91,19 @@ class IssueListSerializer(ModelSerializer):
 
 
 class IssueDetailSerializer(ModelSerializer):
+    comments = SerializerMethodField()
 
     class Meta:
         model = Issue
-        fields = ['id', 'name', 'priority', 'status', 'author', 'attribution', 'balise', 'created_time']
+        fields = ['id',
+                  'name',
+                  'priority',
+                  'status',
+                  'author',
+                  'attribution',
+                  'tag',
+                  'created_time',
+                  'comments']
 
     @staticmethod
     def get_comments(instance: Issue) -> list:
@@ -126,12 +111,13 @@ class IssueDetailSerializer(ModelSerializer):
         serializer = CommentDetailSerializer(queryset, many=True)
         return serializer.data
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if kwargs:
-            if kwargs['context'].get('project') is None:
-                self.comments = SerializerMethodField()
-                self.fields['comments'] = self.comments
+    def get_fields(self):
+        fields = super().get_fields()
+
+        if self.context.get("project") is not None:
+            fields.pop("comments", None)
+
+        return fields
 
 
 class CommentCreateSerializer(ModelSerializer):

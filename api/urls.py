@@ -9,16 +9,16 @@ from contribution.views import ProjectViewSet, IssueViewSet, CommentViewSet, Con
 
 
 router = routers.SimpleRouter()
-router.register('user', UserViewSet, basename='user')
-router.register('project', ProjectViewSet, basename='project')
+router.register('users', UserViewSet, basename='user')
+router.register('projects', ProjectViewSet, basename='project')
 
-project_router = NestedDefaultRouter(router, 'project', lookup='project')
-project_router.register('issue', IssueViewSet, basename='issue')
-project_router.register('contributor', ContributorViewSet, basename='contributor')
+project_router = NestedDefaultRouter(router, 'projects', lookup='project')
+project_router.register('issues', IssueViewSet, basename='issue')
+project_router.register('contributors', ContributorViewSet, basename='contributor')
 
-router.register('issue', IssueViewSet, basename='issue')
-issue_router = NestedDefaultRouter(router, 'issue', lookup='issue')
-issue_router.register('comment', CommentViewSet, basename='comment')
+router.register('issues', IssueViewSet, basename='issue')
+issue_router = NestedDefaultRouter(router, 'issues', lookup='issue')
+issue_router.register('comments', CommentViewSet, basename='comment')
 
 
 urlpatterns = [

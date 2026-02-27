@@ -6,9 +6,17 @@ from django.conf import settings
 
 
 class Project(models.Model):
-    name = models.CharField(max_length=30, unique=False, null=False, blank=False, verbose_name='Nom du projet')
+    name = models.CharField(max_length=30,
+                            unique=False,
+                            null=False,
+                            blank=False,
+                            verbose_name='Nom du projet')
 
-    description = models.TextField(max_length=500, unique=False, null=True, blank=True, verbose_name='Description')
+    description = models.TextField(max_length=500,
+                                   unique=False,
+                                   null=True,
+                                   blank=True,
+                                   verbose_name='Description')
 
     active = models.BooleanField(default=True, verbose_name='Actif')
 
@@ -19,7 +27,11 @@ class Project(models.Model):
         ('ANDROID', 'Android'),
     )
 
-    type = models.CharField(max_length=10, choices=TYPES, verbose_name='Type', null=False, blank=False)
+    type = models.CharField(max_length=10,
+                            choices=TYPES,
+                            verbose_name='Type',
+                            null=False,
+                            blank=False)
 
     author = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                                on_delete=models.CASCADE,
@@ -31,7 +43,9 @@ class Project(models.Model):
                                           related_name='contributors',
                                           verbose_name='Contributeurs')
 
-    created_time = models.DateTimeField(default=datetime.now, blank=True, verbose_name='Date de creation')
+    created_time = models.DateTimeField(default=datetime.now,
+                                        blank=True,
+                                        verbose_name='Date de creation')
 
     def __str__(self):
         return self.name
@@ -56,7 +70,9 @@ class Project(models.Model):
 
 
 class Contributor(models.Model):
-    user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Utilisateur')
+    user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             verbose_name='Utilisateur')
 
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE, verbose_name='Projet')
 
@@ -68,11 +84,16 @@ class Contributor(models.Model):
     role = models.CharField(max_length=20, choices=ROLES, verbose_name='Role')
 
     class Meta:
-        constraints = (models.UniqueConstraint(fields=['user', 'project'], name='unique_contributor'),)
+        constraints = (models.UniqueConstraint(fields=['user', 'project'],
+                                               name='unique_contributor'),)
 
 
 class Issue(models.Model):
-    name = models.CharField(max_length=100, unique=False, null=False, blank=False, verbose_name='Nom du problème')
+    name = models.CharField(max_length=100,
+                            unique=False,
+                            null=False,
+                            blank=False,
+                            verbose_name='Nom du problème')
 
     active = models.BooleanField(default=True, verbose_name='Actif')
 
@@ -105,23 +126,28 @@ class Issue(models.Model):
                                related_name='issue_authors',
                                verbose_name='Auteur')
 
-    attribution = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Attribué à')
+    attribution = models.ForeignKey(to=settings.AUTH_USER_MODEL,
+                                    on_delete=models.CASCADE,
+                                    verbose_name='Attribué à')
 
-    BALISE_CHOICES = (
+    TAG_CHOICES = (
         ('BUG', 'Bug'),
         ('TASK', 'Tâche'),
         ('IMPROVEMENT', 'Amélioration'),
     )
-    balise = models.CharField(max_length=20,
-                              default='BUG',
-                              null=False,
-                              blank=False,
-                              choices=BALISE_CHOICES,
-                              verbose_name='Balise')
+
+    tag = models.CharField(max_length=20,
+                           default='BUG',
+                           null=False,
+                           blank=False,
+                           choices=TAG_CHOICES,
+                           verbose_name='Balise')
 
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE, verbose_name='Projet')
 
-    created_time = models.DateTimeField(default=datetime.now, blank=True, verbose_name='Date de creation')
+    created_time = models.DateTimeField(default=datetime.now,
+                                        blank=True,
+                                        verbose_name='Date de creation')
 
     def __str__(self):
         return self.name
@@ -150,18 +176,29 @@ class Comment(models.Model):
 
     active = models.BooleanField(default=True, verbose_name='Actif')
 
-    description = models.TextField(max_length=500, unique=False, null=True, blank=True, verbose_name='Description')
+    description = models.TextField(max_length=500,
+                                   unique=False,
+                                   null=False,
+                                   blank=False,
+                                   default='Description',
+                                   verbose_name='Description')
 
-    author = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Auteur')
+    author = models.ForeignKey(to=settings.AUTH_USER_MODEL,
+                               on_delete=models.CASCADE,
+                               verbose_name='Auteur')
 
     issue = models.ForeignKey(to=Issue, on_delete=models.CASCADE, verbose_name='Issue')
 
     link = models.URLField(max_length=200, null=False, blank=False, verbose_name='Link')
 
-    created_time = models.DateTimeField(default=datetime.now, blank=True, verbose_name='Date de creation')
+    created_time = models.DateTimeField(default=datetime.now,
+                                        blank=True,
+                                        verbose_name='Date de creation')
 
     def __str__(self):
-        return self.description
+        if self.description:
+            return self.description[:50]
+        return f"Comment {self.pk}"
 
     def disable(self):
         if not self.active:

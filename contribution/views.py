@@ -9,10 +9,12 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from contribution.models import Project, Contributor, Issue, Comment
-from contribution.serializers import (ProjectCreateSerializer, ProjectDetailSerializer, ProjectListSerializer,
-                                      IssueCreateSerializer, IssueDetailSerializer, IssueListSerializer,
-                                      CommentCreateSerializer, CommentListSerializer, CommentDetailSerializer,
-                                      ContributorDetailSerializer, ContributorListSerializer)
+from contribution.serializers import (ProjectCreateSerializer, ProjectDetailSerializer,
+                                      ProjectListSerializer, IssueCreateSerializer,
+                                      IssueDetailSerializer, IssueListSerializer,
+                                      CommentCreateSerializer, CommentListSerializer,
+                                      CommentDetailSerializer, ContributorDetailSerializer,
+                                      ContributorListSerializer)
 
 from contribution.permissions import CustomPermissionOrAdmin, CustomContributorPermissionOrAdmin
 
@@ -86,7 +88,8 @@ class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
         try:
             Contributor.objects.create(user=user, project=project, role='CONTRIBUTOR')
         except IntegrityError:
-            return Response({'status': 'Vous êtes déjà contributeur.'}, status=status.HTTP_409_CONFLICT)
+            return Response({'status': 'Vous êtes déjà contributeur.'},
+                            status=status.HTTP_409_CONFLICT)
 
         return Response({'status': 'Succés'}, status=status.HTTP_200_OK)
 
@@ -149,11 +152,12 @@ class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
     permission_classes = [CustomPermissionOrAdmin]
 
     def get_serializer_class(self):
-        if self.action == 'comment':
-            if self.request.method == 'POST':
-                return CommentCreateSerializer
-            elif self.request.method == 'GET':
-                return CommentDetailSerializer
+        if self.action == 'comment' and self.request.method == 'POST':
+            return CommentCreateSerializer
+
+        if self.action == 'comment' and self.request.method == 'GET':
+            return CommentDetailSerializer
+
         return super().get_serializer_class()
 
     def get_serializer_context(self):
@@ -222,7 +226,8 @@ class CommentViewSet(MultipleSerializerMixin, ModelViewSet):
 
     def get_queryset(self):
         issue_pk = self.kwargs.get('issue_pk')
-        queryset = Comment.objects.filter(issue__id=issue_pk, active=True).order_by('-created_time')
+        queryset = Comment.objects.filter(issue__id=issue_pk,
+                                          active=True).order_by('-created_time')
         comment_uuid = self.request.GET.get('comment_uuid')
         if comment_uuid is not None:
             queryset = queryset.filter(id=comment_uuid)

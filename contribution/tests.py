@@ -32,7 +32,9 @@ class ProjectsTestCase(APITestCase):
                                              type='FRONT-END',
                                              author=cls.user)
 
-        cls.contributor_1 = Contributor.objects.create(project=cls.project, user=cls.user, role='AUTHOR')
+        cls.contributor_1 = Contributor.objects.create(project=cls.project,
+                                                       user=cls.user,
+                                                       role='AUTHOR')
 
         cls.project_2 = Project.objects.create(name='Projet 2',
                                                description='Un super projet 1',
@@ -66,9 +68,11 @@ class TestProject(ProjectsTestCase):
 
     def test_list(self):
         tokens = self.get_tokens_for_user(user=self.project.author)
-        response = self.client.get(path=self.url, headers={'Authorization': 'Bearer '+tokens['access']})
+        response = self.client.get(path=self.url,
+                                   headers={'Authorization': 'Bearer '+tokens['access']})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()['results'], self.get_project_list_data([self.project_2, self.project]))
+        self.assertEqual(response.json()['results'],
+                         self.get_project_list_data([self.project_2, self.project]))
 
     def test_create(self):
         project_count = Project.objects.count()
@@ -87,7 +91,8 @@ class TestProject(ProjectsTestCase):
     def test_update(self):
         tokens = self.get_tokens_for_user(user=self.project.author)
         project_count = Project.objects.count()
-        response = self.client.put(path=reverse('project-detail', kwargs={'pk': self.project.pk}),
+        response = self.client.put(path=reverse('project-detail',
+                                                kwargs={'pk': self.project.pk}),
                                    headers={'Authorization': 'Bearer '+tokens['access']},
                                    data={'name': 'Nouveau grand projet',
                                          'description': 'Une description du nouveau projet',
@@ -100,7 +105,8 @@ class TestProject(ProjectsTestCase):
     def test_a_user_update_b_project(self):
         tokens = self.get_tokens_for_user(self.project_2.author)
         project_count = Project.objects.count()
-        response = self.client.put(path=reverse('project-detail', kwargs={'pk': self.project.pk}),
+        response = self.client.put(path=reverse('project-detail',
+                                                kwargs={'pk': self.project.pk}),
                                    headers={'Authorization': 'Bearer '+tokens['access']},
                                    data={'name': 'Nouveau grand projet',
                                          'description': 'Une description du nouveau projet',
@@ -113,7 +119,8 @@ class TestProject(ProjectsTestCase):
     def test_delete(self):
         tokens = self.get_tokens_for_user(self.user_2)
         user_count = User.objects.count()
-        response = self.client.delete(path=reverse('user-detail', kwargs={'pk': self.project_2.pk}),
+        response = self.client.delete(path=reverse('user-detail',
+                                                   kwargs={'pk': self.project_2.pk}),
                                       headers={'Authorization': 'Bearer '+tokens['access']})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(User.objects.count(), user_count - 1)
@@ -121,7 +128,8 @@ class TestProject(ProjectsTestCase):
 
     def test_update_without_token(self):
         project_count = Project.objects.count()
-        response = self.client.put(path=reverse('project-detail', kwargs={'pk': self.project.pk}),
+        response = self.client.put(path=reverse('project-detail',
+                                                kwargs={'pk': self.project.pk}),
                                    data={'name': 'Nouveau grand projet',
                                          'description': 'Une description du nouveau projet',
                                          'type': 'IOS',
@@ -161,7 +169,9 @@ class ContributorsTestCase(APITestCase):
                                              type='FRONT-END',
                                              author=cls.user)
 
-        cls.contributor_1 = Contributor.objects.create(project=cls.project, user=cls.user, role='AUTHOR')
+        cls.contributor_1 = Contributor.objects.create(project=cls.project,
+                                                       user=cls.user,
+                                                       role='AUTHOR')
 
         cls.project_2 = Project.objects.create(name='Projet 2',
                                                description='Un super projet 2',
@@ -169,7 +179,9 @@ class ContributorsTestCase(APITestCase):
                                                type='BACK-END',
                                                author=cls.user_2)
 
-        cls.contributor_2 = Contributor.objects.create(project=cls.project_2, user=cls.user_2, role='AUTHOR')
+        cls.contributor_2 = Contributor.objects.create(project=cls.project_2,
+                                                       user=cls.user_2,
+                                                       role='AUTHOR')
 
     @staticmethod
     def get_contributor_list_data(project: Project) -> list[dict]:
@@ -198,7 +210,8 @@ class TestContributor(ContributorsTestCase):
     url_project_1_detail = reverse_lazy('project-detail', kwargs={"pk": 1})
 
     url_project_1_contributors = reverse("contributor-list", kwargs={"project_pk": 1})
-    url_project_1_contributor_1_detail = reverse("contributor-detail", kwargs={"project_pk": 1, "pk": 1})
+    url_project_1_contributor_1_detail = reverse("contributor-detail",
+                                                 kwargs={"project_pk": 1, "pk": 1})
     url_project_1_subscribe = reverse("project-subscribe", kwargs={"pk": 1})
 
     @staticmethod
@@ -231,7 +244,10 @@ class TestContributor(ContributorsTestCase):
         response = self.client.get(path=self.url_project_1_contributor_1_detail,
                                    headers={'Authorization': 'Bearer '+tokens['access']})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), {"id": 1, "project": 1, "user": 1, "role": "AUTHOR"})
+        self.assertEqual(response.json(), {"id": 1,
+                                           "project": 1,
+                                           "user": 1,
+                                           "role": "AUTHOR"})
 
     def test_access_without_token(self):
         response = self.client.get(path=self.url_project_1_contributor_1_detail)
@@ -283,9 +299,13 @@ class IssuesTestCase(APITestCase):
                                              type='FRONT-END',
                                              author=cls.user)
 
-        cls.contributor_1 = Contributor.objects.create(project=cls.project, user=cls.user, role='AUTHOR')
+        cls.contributor_1 = Contributor.objects.create(project=cls.project,
+                                                       user=cls.user,
+                                                       role='AUTHOR')
 
-        cls.contributor_2 = Contributor.objects.create(project=cls.project, user=cls.user_2, role='CONTRIBUTOR')
+        cls.contributor_2 = Contributor.objects.create(project=cls.project,
+                                                       user=cls.user_2,
+                                                       role='CONTRIBUTOR')
 
         cls.project_2 = Project.objects.create(name='Projet 2',
                                                description='Un super projet 2',
@@ -299,18 +319,24 @@ class IssuesTestCase(APITestCase):
                                                type='FRONT-END',
                                                author=cls.user_3)
 
-        cls.contributor_3 = Contributor.objects.create(project=cls.project_3, user=cls.user_3, role='AUTHOR')
+        cls.contributor_3 = Contributor.objects.create(project=cls.project_3,
+                                                       user=cls.user_3,
+                                                       role='AUTHOR')
 
-        cls.contributor_4 = Contributor.objects.create(project=cls.project_2, user=cls.user_2, role='AUTHOR')
+        cls.contributor_4 = Contributor.objects.create(project=cls.project_2,
+                                                       user=cls.user_2,
+                                                       role='AUTHOR')
 
-        cls.contributor_5 = Contributor.objects.create(project=cls.project_2, user=cls.user, role='CONTRIBUTOR')
+        cls.contributor_5 = Contributor.objects.create(project=cls.project_2,
+                                                       user=cls.user,
+                                                       role='CONTRIBUTOR')
 
         cls.issue_1 = Issue.objects.create(name='Issue in project 1',
                                            priority='LOW',
                                            status='TO DO',
                                            author=cls.user,
                                            attribution=cls.user_2,
-                                           balise='BUG',
+                                           tag='BUG',
                                            project=cls.project)
 
         cls.issue_2 = Issue.objects.create(name='Issue in project 2',
@@ -318,7 +344,7 @@ class IssuesTestCase(APITestCase):
                                            status='TO DO',
                                            author=cls.user_2,
                                            attribution=cls.user,
-                                           balise='TASK',
+                                           tag='TASK',
                                            project=cls.project_2)
 
     @staticmethod
@@ -353,7 +379,7 @@ class IssuesTestCase(APITestCase):
             'status': issue.status,
             'author': issue.author.id,
             'attribution': issue.attribution.id,
-            'balise': issue.balise,
+            'tag': issue.tag,
             'created_time': issue.created_time.isoformat()[:19],
             'comments': []
         }
@@ -367,7 +393,7 @@ class IssuesTestCase(APITestCase):
             'status': issue.status,
             'author': issue.author.id,
             'attribution': issue.attribution.id,
-            'balise': issue.balise,
+            'tag': issue.tag,
             'created_time': issue.created_time.isoformat()[:19]
         }
 
@@ -377,7 +403,8 @@ class TestIssue(IssuesTestCase):
 
     url_project_1_issues = reverse("issue-list", kwargs={"project_pk": 1})
 
-    url_project_1_issue_1_detail = reverse("issue-detail", kwargs={"project_pk": 1, "pk": 1})
+    url_project_1_issue_1_detail = reverse("issue-detail",
+                                           kwargs={"project_pk": 1, "pk": 1})
 
     url_issue_1_detail = reverse("issue-detail", kwargs={"pk": 1})
 
@@ -449,7 +476,8 @@ class TestIssue(IssuesTestCase):
                                    headers={'Authorization': 'Bearer ' + tokens['access']})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()["results"], self.get_issue_list_data(project=self.project))
+        self.assertEqual(response.json()["results"],
+                         self.get_issue_list_data(project=self.project))
 
     def test_non_contributor_detail_access(self):
         tokens = self.get_tokens_for_user(user=self.user_3)
@@ -498,9 +526,13 @@ class CommentsTestCase(APITestCase):
                                              type='FRONT-END',
                                              author=cls.user)
 
-        cls.contributor_1 = Contributor.objects.create(project=cls.project, user=cls.user, role='AUTHOR')
+        cls.contributor_1 = Contributor.objects.create(project=cls.project,
+                                                       user=cls.user,
+                                                       role='AUTHOR')
 
-        cls.contributor_2 = Contributor.objects.create(project=cls.project, user=cls.user_2, role='CONTRIBUTOR')
+        cls.contributor_2 = Contributor.objects.create(project=cls.project,
+                                                       user=cls.user_2,
+                                                       role='CONTRIBUTOR')
 
         cls.project_2 = Project.objects.create(name='Projet 2',
                                                description='Un super projet 2',
@@ -514,18 +546,24 @@ class CommentsTestCase(APITestCase):
                                                type='FRONT-END',
                                                author=cls.user_3)
 
-        cls.contributor_3 = Contributor.objects.create(project=cls.project_3, user=cls.user_3, role='AUTHOR')
+        cls.contributor_3 = Contributor.objects.create(project=cls.project_3,
+                                                       user=cls.user_3,
+                                                       role='AUTHOR')
 
-        cls.contributor_4 = Contributor.objects.create(project=cls.project_2, user=cls.user_2, role='AUTHOR')
+        cls.contributor_4 = Contributor.objects.create(project=cls.project_2,
+                                                       user=cls.user_2,
+                                                       role='AUTHOR')
 
-        cls.contributor_5 = Contributor.objects.create(project=cls.project_2, user=cls.user, role='CONTRIBUTOR')
+        cls.contributor_5 = Contributor.objects.create(project=cls.project_2,
+                                                       user=cls.user,
+                                                       role='CONTRIBUTOR')
 
         cls.issue_1 = Issue.objects.create(name='Issue in project 1',
                                            priority='LOW',
                                            status='TO DO',
                                            author=cls.user,
                                            attribution=cls.user_2,
-                                           balise='BUG',
+                                           tag='BUG',
                                            project=cls.project)
 
         cls.issue_2 = Issue.objects.create(name='Issue in project 2',
@@ -533,7 +571,7 @@ class CommentsTestCase(APITestCase):
                                            status='TO DO',
                                            author=cls.user_2,
                                            attribution=cls.user,
-                                           balise='TASK',
+                                           tag='TASK',
                                            project=cls.project_2)
 
         cls.issue_3 = Issue.objects.create(name='Issue in project 3',
@@ -541,7 +579,7 @@ class CommentsTestCase(APITestCase):
                                            status='TO DO',
                                            author=cls.user_3,
                                            attribution=cls.user_3,
-                                           balise='BUG',
+                                           tag='BUG',
                                            project=cls.project_3)
 
         cls.comment_1 = Comment.objects.create(description='Description comment 1',
@@ -592,7 +630,7 @@ class CommentsTestCase(APITestCase):
             'status': issue.status,
             'author': issue.author.id,
             'attribution': issue.attribution.id,
-            'balise': issue.balise,
+            'tag': issue.tag,
             'created_time': issue.created_time.isoformat()[:19],
             'comments': [self.get_comment_detail_data(comment)
                          for comment in Comment.objects.filter(issue=issue).order_by("created_time")]
@@ -631,7 +669,8 @@ class TestComment(CommentsTestCase):
 
     def test_detail(self):
         comment_pk = str(self.comment_1.uuid)
-        url_issue_1_comment_1_detail = reverse("comment-detail", kwargs={"issue_pk": 1, "pk": comment_pk})
+        url_issue_1_comment_1_detail = reverse("comment-detail",
+                                               kwargs={"issue_pk": 1, "pk": comment_pk})
         tokens = self.get_tokens_for_user(user=self.user)
 
         response = self.client.get(path=url_issue_1_comment_1_detail,
@@ -661,7 +700,8 @@ class TestComment(CommentsTestCase):
 
     def test_non_contributor_detail_access(self):
         comment_pk = str(self.comment_1.uuid)
-        url_issue_1_comment_1_detail = reverse("comment-detail", kwargs={"issue_pk": 1, "pk": comment_pk})
+        url_issue_1_comment_1_detail = reverse("comment-detail",
+                                               kwargs={"issue_pk": 1, "pk": comment_pk})
 
         tokens = self.get_tokens_for_user(user=self.user_3)
         response = self.client.get(path=url_issue_1_comment_1_detail,

@@ -52,7 +52,8 @@ class TestUser(AccountsTestCase):
     def test_list(self):
         response = self.client.get(path=self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()['results'], self.get_user_list_data([self.user, self.user_2]))
+        self.assertEqual(response.json()['results'],
+                         self.get_user_list_data([self.user, self.user_2]))
 
     def test_create(self):
         user_count = User.objects.count()
@@ -68,7 +69,8 @@ class TestUser(AccountsTestCase):
     def test_update(self):
         tokens = self.get_tokens_for_user(user=self.user_2)
         user_count = User.objects.count()
-        response = self.client.put(path=reverse('user-detail', kwargs={'pk': self.user_2.pk}),
+        response = self.client.put(path=reverse('user-detail',
+                                                kwargs={'pk': self.user_2.pk}),
                                    headers={'Authorization': 'Bearer '+tokens['access']},
                                    data={'username': 'Benoit',
                                          'age': 47,
@@ -83,7 +85,8 @@ class TestUser(AccountsTestCase):
     def test_delete(self):
         tokens = self.get_tokens_for_user(user=self.user_2)
         user_count = User.objects.count()
-        response = self.client.delete(path=reverse('user-detail', kwargs={'pk': self.user_2.pk}),
+        response = self.client.delete(path=reverse('user-detail',
+                                                   kwargs={'pk': self.user_2.pk}),
                                       headers={'Authorization': 'Bearer '+tokens['access']})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(User.objects.count(), user_count - 1)
@@ -92,14 +95,16 @@ class TestUser(AccountsTestCase):
     def test_a_user_delete_b_user(self):
         tokens = self.get_tokens_for_user(user=self.user_2)
         user_count = User.objects.count()
-        response = self.client.delete(path=reverse('user-detail', kwargs={'pk': self.user.pk}),
+        response = self.client.delete(path=reverse('user-detail',
+                                                   kwargs={'pk': self.user.pk}),
                                       headers={'Authorization': 'Bearer '+tokens['access']})
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(User.objects.count(), user_count)
 
     def test_update_without_token(self):
         user_count = User.objects.count()
-        response = self.client.put(path=reverse('user-detail', kwargs={'pk': self.user_2.pk}))
+        response = self.client.put(path=reverse('user-detail',
+                                                kwargs={'pk': self.user_2.pk}))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(User.objects.count(), user_count)
 
@@ -107,7 +112,8 @@ class TestUser(AccountsTestCase):
         tokens = self.get_tokens_for_user(user=self.user_2)
         user_count = User.objects.count()
         password_to_test = 'tc2_Std30'
-        response = self.client.put(path=reverse('user-detail', kwargs={'pk': self.user_2.pk}),
+        response = self.client.put(path=reverse('user-detail',
+                                                kwargs={'pk': self.user_2.pk}),
                                    headers={'Authorization': 'Bearer ' + tokens['access']},
                                    data={'username': 'Benoit',
                                          'age': 47,
