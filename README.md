@@ -223,8 +223,9 @@ Poetry will read the `poetry.lock` file to know which dependencies to install
     <img src="docs/screenshots/get_issue_detail_with_comments_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
 </p>
 
-- POST issue fails
+- POST issue
 <p align="center">
+    <img src="docs/screenshots/post_project_issue_failed_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
     <img src="docs/screenshots/post_project_issue_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
 </p>
 

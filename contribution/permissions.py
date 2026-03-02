@@ -97,17 +97,22 @@ class CustomPermissionOrAdmin(BasePermission):
             if project:
                 return self._is_contributor(user=request.user, project=project)
 
-        if view.action == "create":
-            project = self._get_project_from_view(view=view)
-            if project and view.basename == "issue":
-                assigned_user = self._get_assigned_user_from_request(request)
-                if not self._is_contributor(user=assigned_user, project=project):
+        if view.action != "create" or view.basename != "issue":
+            return True
 
-                    raise PermissionDenied({"attribution": f"{assigned_user} n'est pas "
-                                                           f"contributeur(rice) du projet "
-                                                           f"{project}."})
+        project = self._get_project_from_view(view)
+        if not project:
+            return False
 
-                return self._is_contributor(user=request.user, project=project)
+        if not self._is_contributor(request.user, project):
+            return False
+
+        assigned_user = self._get_assigned_user_from_request(request)
+
+        if not self._is_contributor(assigned_user, project):
+            raise PermissionDenied({
+                "attribution": f"{assigned_user} n'est pas contributeur(rice) du projet {project}."
+            })
 
         return True
 
