@@ -138,9 +138,9 @@ class CustomPermissionOrAdmin(BasePermission):
 
         if request.method in ["PATCH"]:
             if (
-                    isinstance(obj, Issue)
-                    and self._is_assigned(user=request.user, issue=obj)
-                    and set(request.data.keys()) == {"status"}
+                isinstance(obj, Issue)
+                and self._is_assigned(user=request.user, issue=obj)
+                and set(request.data.keys()) == {"status"}
             ):
                 return True
             raise PermissionDenied("Action non autorisée : vous ne pouvez modifier que le statut.")
