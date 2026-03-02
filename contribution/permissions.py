@@ -79,12 +79,12 @@ class CustomPermissionOrAdmin(BasePermission):
 
     @staticmethod
     def _get_assigned_user_from_request(request: HttpRequest) -> User | None:
-        request_body_str = request.body.decode()
+        data = request.data
 
-        attribution = int(request_body_str.split("\"attribution\": ")[1][0])
+        attribution = data.get('attribution')
         if attribution:
-            print(f"attribution: {attribution}")
             return User.objects.get(pk=attribution)
+
         return None
 
     def has_permission(self, request: HttpRequest,
@@ -102,9 +102,10 @@ class CustomPermissionOrAdmin(BasePermission):
             if project and view.basename == "issue":
                 assigned_user = self._get_assigned_user_from_request(request)
                 if not self._is_contributor(user=assigned_user, project=project):
-                    raise PermissionDenied(
-                        {'attribution': f"{assigned_user} n'est pas contributeur(rice) du "
-                                        f"projet {project}."})
+
+                    raise PermissionDenied({"attribution": f"{assigned_user} n'est pas "
+                                                           f"contributeur(rice) du projet "
+                                                           f"{project}."})
 
                 return self._is_contributor(user=request.user, project=project)
 
@@ -131,9 +132,11 @@ class CustomPermissionOrAdmin(BasePermission):
             return True
 
         if request.method in ["PATCH"]:
-            if (isinstance(obj, Issue)
+            if (
+                    isinstance(obj, Issue)
                     and self._is_assigned(user=request.user, issue=obj)
-                    and set(request.data.keys()) == {"status"}):
+                    and set(request.data.keys()) == {"status"}
+            ):
                 return True
             raise PermissionDenied("Action non autorisée : vous ne pouvez modifier que le statut.")
 

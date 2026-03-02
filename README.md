@@ -210,12 +210,22 @@ Poetry will read the `poetry.lock` file to know which dependencies to install
     <img src="docs/screenshots/get_project_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
 </p>
 
+- POST project
+<p align="center">
+    <img src="docs/screenshots/post_project_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+</p>
+
 - GET issue
 <p align="center">
     <img src="docs/screenshots/get_project_issue_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
     <img src="docs/screenshots/get_project_issue_detail_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
     <img src="docs/screenshots/get_issue_detail_without_comments_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
     <img src="docs/screenshots/get_issue_detail_with_comments_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
+</p>
+
+- POST issue fails
+<p align="center">
+    <img src="docs/screenshots/post_project_issue_screenshot.png" width="auto" style="border: 1px solid grey; border-radius: 10px;">
 </p>
 
 - GET comment
