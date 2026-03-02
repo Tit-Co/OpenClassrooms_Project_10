@@ -98,7 +98,7 @@ Poetry will read the `poetry.lock` file to know which dependencies to install
 
 ### <u>User management</u>
 
-- Endpoint to use : `http://127.0.0.1:8000/api/user/`
+- Endpoint to use : `http://127.0.0.1:8000/api/users/`
 
     - In method GET, you will have access to the users accounts list.
 
@@ -118,7 +118,7 @@ Poetry will read the `poetry.lock` file to know which dependencies to install
         ```
 
 ### <u>Projects management</u>
-- Endpoint to use : `http://127.0.0.1:8000/api/project/`
+- Endpoint to use : `http://127.0.0.1:8000/api/projects/`
   - With GET method, you will have access to the existing projects list, if you are authenticated. And if you retrieve on a particular existing project, 
   you will need to subscribe to this project first.
 
@@ -137,10 +137,10 @@ Poetry will read the `poetry.lock` file to know which dependencies to install
 ### <u>Issues management</u>
 
 - Endpoints to use : 
-        `http://127.0.0.1:8000/api/project/project_pk/issue/`
-        or `http://127.0.0.1:8000/api/issue/`
-        or `http://127.0.0.1:8000/api/project/project_pk/issue/issue_pk/`
-        or `http://127.0.0.1:8000/api/issue/issue_pk/`
+        `http://127.0.0.1:8000/api/projects/project_pk/issues/`
+        or `http://127.0.0.1:8000/api/issues/`
+        or `http://127.0.0.1:8000/api/projects/project_pk/issues/issue_pk/`
+        or `http://127.0.0.1:8000/api/issues/issue_pk/`
   - Two routes are created to handle the comments (as shown in the next section) because one nesting level only is allowed regarding the best practices of "Green Code" :  for example the url `http://127.0.0.1:8000/api/project/<project_pk>/issue/<issue_pk>/comments` is not allowed. 
   - With GET method on the two first endpoints, you will have access to the existing issues short list, if you are authenticated. And if you retrieve on a particular existing issue, you will need to subscribe to the project that includes the issue first.
   And if you retrieve on a particular existing issue (with the two next endpoints), you will have all the issue details.
@@ -162,8 +162,8 @@ Poetry will read the `poetry.lock` file to know which dependencies to install
 ### <u>Comments management</u>
 
 - Endpoints to use : 
-    `http://127.0.0.1:8000/api/issue/issue_pk/comment/`
-    or `http://127.0.0.1:8000/api/issue/issue_pk/comment/comment_pk`
+    `http://127.0.0.1:8000/api/issues/issue_pk/comments/`
+    or `http://127.0.0.1:8000/api/issues/issue_pk/comments/comment_pk`
   - With GET method on the first endpoint, you will have access to the existing issues short list, if you are authenticated and have subscribed to the project that includes the issue first.
   And if you retrieve on a particular existing comment (with the second endpoints), you will have all the comment details.
   - With POST method, you will be able to create a new comment by typing the comment datas in json format below as an example.
@@ -174,14 +174,14 @@ Poetry will read the `poetry.lock` file to know which dependencies to install
     ```
         {
         "description": "I can help on this issue",
-        "link": "http://127.0.0.1:8000/api/issue/10/",
+        "link": "http://127.0.0.1:8000/api/projects/1/issues/10/",
         }
     ```
 
 ### <u>Project contributors management</u>
 
 - Endpoints to use : 
-    `http://127.0.0.1:8000/api/project/project_pk/contributor/`
+    `http://127.0.0.1:8000/api/projects/project_pk/contributors/`
   - With GET method on the endpoint, you will have access to the existing project contributors short list of the given project, if you are authenticated and have subscribed to the project first.
   - All others methods are not allowed.
 
