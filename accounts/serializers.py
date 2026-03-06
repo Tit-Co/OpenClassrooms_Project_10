@@ -16,6 +16,14 @@ class UserCreateSerializer(ModelSerializer):
         fields = ['id', 'username', 'age', 'can_be_contacted', 'can_data_be_shared', 'password', 'password2']
 
     def validate(self, data: Any) -> Any:
+        """
+        Method to validate the data : username and password.
+        Args:
+            data (Any): the data to be validated
+
+        Returns:
+            The validated data otherwise an error is raised.
+        """
         if self.instance is None and User.objects.filter(username=data['username']).exists():
             raise ValidationError({'username': "Ce nom d'utilisateur existe déjà."})
 
@@ -26,6 +34,14 @@ class UserCreateSerializer(ModelSerializer):
 
     @staticmethod
     def validate_password(value: str) -> str:
+        """
+        Method to validate the password.
+        Args:
+            value (str): the password to be validated
+
+        Returns:
+            The validated password otherwise an error is raised.
+        """
         if len(value) < 8:
             raise ValidationError(
                 "Le mot de passe doit contenir au moins 8 caractères."
@@ -34,12 +50,28 @@ class UserCreateSerializer(ModelSerializer):
 
     @staticmethod
     def validate_age(value: int) -> int:
+        """
+        Method to validate the age.
+        Args:
+            value (int): the age to be validated
+
+        Returns:
+            The validated age otherwise an error is raised.
+        """
         if value is not None and value < 15:
             raise ValidationError(
                 {'age': "Vous devez avoir au moins 15 ans."})
         return value
 
     def create(self, validated_data: Any) -> User:
+        """
+        Method to create the user.
+        Args:
+            validated_data (Any): the validated data to be created
+
+        Returns:
+            The created user.
+        """
         user = User.objects.create_user(
             username=validated_data['username'],
             age=validated_data['age'],
@@ -50,6 +82,15 @@ class UserCreateSerializer(ModelSerializer):
         return user
 
     def update(self, instance: User, validated_data: Any) -> User:
+        """
+        Method to update the user details.
+        Args:
+            instance (User): the user to be updated
+            validated_data (Any): the validated data to be updated
+
+        Returns:
+            The updated user instance.
+        """
         instance.username = validated_data.get("username", instance.username)
         instance.age = validated_data.get("age", instance.age)
         instance.can_be_contacted = validated_data.get("can_be_contacted", instance.can_be_contacted)
@@ -67,6 +108,11 @@ class UserCreateSerializer(ModelSerializer):
 
     @staticmethod
     def update_user_data(user: User):
+        """
+        Method to update the user data when the user has changed their consent to data sharing.
+        Args:
+            user (User): the user to be updated
+        """
         user_contributor_projects = Contributor.objects.filter(user=user).values_list('project_id', flat=True)
 
         projects_to_clean = Project.objects.exclude(id__in=user_contributor_projects)

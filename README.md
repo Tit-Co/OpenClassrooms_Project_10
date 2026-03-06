@@ -28,7 +28,9 @@ The application must:
 ## INSTALLATION
 
 ### - Clone the repository :
-`git clone https://github.com/Tit-Co/OpenClassrooms_Project_10.git`
+```
+git clone https://github.com/Tit-Co/OpenClassrooms_Project_10.git
+```
 
 ### - Navigate into the project directory :
 `cd OpenClassrooms_Project_10`

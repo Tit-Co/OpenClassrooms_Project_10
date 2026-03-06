@@ -51,6 +51,11 @@ class Project(models.Model):
         return self.name
 
     def disable(self):
+        """
+        Method that disables a project.
+        Returns:
+
+        """
         if not self.active:
             return
         self.active = False
@@ -60,6 +65,11 @@ class Project(models.Model):
         self.save()
 
     def enable(self):
+        """
+        Method that enables a project.
+        Returns:
+
+        """
         if self.active:
             return
         self.active = True
@@ -153,6 +163,11 @@ class Issue(models.Model):
         return self.name
 
     def disable(self):
+        """
+        Method that disables an issue.
+        Returns:
+
+        """
         if not self.active:
             return
         self.active = False
@@ -162,6 +177,11 @@ class Issue(models.Model):
         self.save()
 
     def enable(self):
+        """
+        Method that enables an issue.
+        Returns:
+
+        """
         if self.active:
             return
         self.active = True
@@ -201,12 +221,22 @@ class Comment(models.Model):
         return f"Comment {self.pk}"
 
     def disable(self):
+        """
+        Method that disables a comment.
+        Returns:
+
+        """
         if not self.active:
             return
         self.active = False
         self.save()
 
     def enable(self):
+        """
+        Method that enables a comment.
+        Returns:
+
+        """
         if self.active:
             return
         self.active = True

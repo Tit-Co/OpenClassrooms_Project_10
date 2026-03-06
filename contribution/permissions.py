@@ -42,6 +42,14 @@ class CustomPermissionOrAdmin(BasePermission):
 
     @staticmethod
     def _get_project_from_obj(obj: Project | Issue | Comment | Contributor) -> Project:
+        """
+        Method that gets a project from an object.
+        Args:
+            obj (Project | Issue | Comment | Contributor): The object.
+
+        Returns:
+            The project.
+        """
         if hasattr(obj, "project"):
             return obj.project
 
@@ -53,6 +61,14 @@ class CustomPermissionOrAdmin(BasePermission):
     @staticmethod
     def _get_project_from_view(view: ProjectViewSet | IssueViewSet | CommentViewSet) -> (Project
                                                                                          | None):
+        """
+        Method that gets a project from a view.
+        Args:
+            view (ProjectViewSet | IssueViewSet | CommentViewSet): The view.
+
+        Returns:
+            The project.
+        """
         kwargs = view.kwargs
         basename = view.basename
 
@@ -79,6 +95,14 @@ class CustomPermissionOrAdmin(BasePermission):
 
     @staticmethod
     def _get_assigned_user_from_request(request: HttpRequest) -> User | None:
+        """
+        Method that gets the issue assigned user from the request.
+        Args:
+            request (HttpRequest): The request.
+
+        Returns:
+            The user if exists, None otherwise.
+        """
         data = request.data
 
         attribution = data.get('attribution')
@@ -89,6 +113,15 @@ class CustomPermissionOrAdmin(BasePermission):
 
     def has_permission(self, request: HttpRequest,
                        view: ProjectViewSet | IssueViewSet | CommentViewSet) -> bool:
+        """
+        Method that checks if a user has permission to access the data
+        Args:
+            request (HttpRequest): The request.
+            view (ProjectViewSet | IssueViewSet | CommentViewSet): The view.
+
+        Returns:
+            True if the user has permission to access the data, False otherwise.
+        """
         if not request.user or not self._is_authenticated(request.user):
             return False
 
@@ -119,7 +152,17 @@ class CustomPermissionOrAdmin(BasePermission):
     def has_object_permission(self, request: HttpRequest,
                               view: ProjectViewSet | IssueViewSet | CommentViewSet,
                               obj: Project | Issue | Comment) -> bool:
+        """
+        Methods for verifying whether a user is authorized to act on the data according to
+         the view action or the request method.
+        Args:
+            request (HttpRequest): The request.
+            view (ProjectViewSet | IssueViewSet | CommentViewSet): The view.
+            obj (Project | Issue | Comment) : The object.
 
+        Returns:
+            True if the user is authorized to act on the data, False otherwise.
+        """
         if request.user.is_superuser:
             return True
 
@@ -160,6 +203,14 @@ class CustomContributorPermissionOrAdmin(BasePermission):
 
     @staticmethod
     def _get_project_from_view(view: ContributorViewSet) -> Project | None:
+        """
+        Method that gets a project from the view set.
+        Args:
+            view (ContributorViewSet): The view.
+
+        Returns:
+            The project, None otherwise.
+        """
         kwargs = view.kwargs
         basename = view.basename
 
@@ -177,6 +228,15 @@ class CustomContributorPermissionOrAdmin(BasePermission):
         return None
 
     def has_permission(self, request: HttpRequest, view: ContributorViewSet):
+        """
+        Method that checks if a user is authorized to access the contributor data.
+        Args:
+            request (HttpRequest): The request.
+            view (ContributorViewSet): The view set.
+
+        Returns:
+            True if the user is authorized to access the data, False otherwise.
+        """
         if request.user.is_superuser:
             return True
 
@@ -190,6 +250,17 @@ class CustomContributorPermissionOrAdmin(BasePermission):
 
     def has_object_permission(self, request: HttpRequest,
                               view: ContributorViewSet, obj: Contributor) -> bool:
+        """
+        Method that checks if a user is authorized to act on the contributor data according to the
+        request method or the user role.
+        Args:
+            request (HttpRequest): The request.
+            view (ContributorViewSet): The view.
+            obj (Contributor) : The object.
+
+        Returns:
+            True if the user is authorized to act on the data, False otherwise.
+        """
         if request.user.is_superuser:
             return True
 

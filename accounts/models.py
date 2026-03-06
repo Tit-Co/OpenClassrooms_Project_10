@@ -18,12 +18,22 @@ class User(AbstractUser):
         return self.username
 
     def disable(self):
+        """
+        Method to disable the user in DB.
+        Returns:
+
+        """
         if not self.is_active:
             return
         self.is_active = False
         self.save()
 
     def enable(self):
+        """
+        Method to enable the user in DB.
+        Returns:
+
+        """
         if self.is_active:
             return
         self.is_active = True

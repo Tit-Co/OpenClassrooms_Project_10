@@ -12,6 +12,9 @@ from contribution.models import Project, Contributor, Issue, Comment
 class ProjectsTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
+        """
+        Method that initializes the data before every test.
+        """
         cls.user = User.objects.create(username='Benoit',
                                        is_active=True,
                                        age=46,
@@ -44,6 +47,14 @@ class ProjectsTestCase(APITestCase):
 
     @staticmethod
     def get_project_list_data(projects: list[Project]):
+        """
+        Method that gets a list of projects data dictionaries.
+        Args:
+            projects (list[Project]): The list of projects.
+
+        Returns:
+            The list of restricted projects data dictionaries.
+        """
         return [
             {
                 'id': project.pk,
@@ -57,6 +68,14 @@ class TestProject(ProjectsTestCase):
 
     @staticmethod
     def get_tokens_for_user(user: AbstractBaseUser):
+        """
+        Method that gets a token for an authenticated user.
+        Args:
+            user (User): The user.
+
+        Returns:
+            The token data for an authenticated user.
+        """
         if not user.is_active:
             raise AuthenticationFailed("User is not active")
 
@@ -67,6 +86,9 @@ class TestProject(ProjectsTestCase):
         }
 
     def test_list(self):
+        """
+        Method that tests if a user can list projects.
+        """
         tokens = self.get_tokens_for_user(user=self.project.author)
         response = self.client.get(path=self.url,
                                    headers={'Authorization': 'Bearer '+tokens['access']})
@@ -75,6 +97,9 @@ class TestProject(ProjectsTestCase):
                          self.get_project_list_data([self.project_2, self.project]))
 
     def test_create(self):
+        """
+        Method to test if a user can create a new project.
+        """
         project_count = Project.objects.count()
         tokens = self.get_tokens_for_user(user=self.project.author)
         response = self.client.post(path=self.url,
@@ -89,6 +114,9 @@ class TestProject(ProjectsTestCase):
         self.assertEqual(Project.objects.count(), project_count + 1)
 
     def test_update(self):
+        """
+        Method to test if a user can update a project.
+        """
         tokens = self.get_tokens_for_user(user=self.project.author)
         project_count = Project.objects.count()
         response = self.client.put(path=reverse('project-detail',
@@ -103,6 +131,9 @@ class TestProject(ProjectsTestCase):
         self.assertEqual(Project.objects.count(), project_count)
 
     def test_a_user_update_b_project(self):
+        """
+        Method to test if a user can update a project created by another user.
+        """
         tokens = self.get_tokens_for_user(self.project_2.author)
         project_count = Project.objects.count()
         response = self.client.put(path=reverse('project-detail',
@@ -117,6 +148,9 @@ class TestProject(ProjectsTestCase):
         self.assertEqual(Project.objects.count(), project_count)
 
     def test_delete(self):
+        """
+        Method to test if a user can delete a project.
+        """
         tokens = self.get_tokens_for_user(self.user_2)
         user_count = User.objects.count()
         response = self.client.delete(path=reverse('user-detail',
@@ -127,6 +161,9 @@ class TestProject(ProjectsTestCase):
         self.user.refresh_from_db()
 
     def test_update_without_token(self):
+        """
+        Method to test if a user can update a project without authentication token.
+        """
         project_count = Project.objects.count()
         response = self.client.put(path=reverse('project-detail',
                                                 kwargs={'pk': self.project.pk}),
@@ -142,6 +179,9 @@ class TestProject(ProjectsTestCase):
 class ContributorsTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
+        """
+        Method to setup test data.
+        """
         cls.user = User.objects.create(username='Benoit',
                                        is_active=True,
                                        age=46,
@@ -185,6 +225,14 @@ class ContributorsTestCase(APITestCase):
 
     @staticmethod
     def get_contributor_list_data(project: Project) -> list[dict]:
+        """
+        Method to get a list of contributors data for a project.
+        Args:
+            project (Project): The project.
+
+        Returns:
+            The list of contributors data dictionaries.
+        """
         return [
             {
                 'id': contributor.pk,
@@ -195,6 +243,14 @@ class ContributorsTestCase(APITestCase):
 
     @staticmethod
     def get_project(project: Project) -> dict:
+        """
+        Method to get a project data dictionary from a project.
+        Args:
+            project (Project): The project.
+
+        Returns:
+            The project data dictionary.
+        """
         return {
             'id': project.pk,
             'name': project.name,
@@ -216,6 +272,14 @@ class TestContributor(ContributorsTestCase):
 
     @staticmethod
     def get_tokens_for_user(user: AbstractBaseUser):
+        """
+        Method to get tokens for a user.
+        Args:
+            user (AbstractBaseUser): The user.
+
+        Returns:
+            The tokens for a user, an error is raised otherwise.
+        """
         if not user.is_active:
             raise AuthenticationFailed("User is not active")
 
@@ -226,6 +290,9 @@ class TestContributor(ContributorsTestCase):
         }
 
     def test_list(self):
+        """
+        Method to test if a user can list contributors.
+        """
         tokens = self.get_tokens_for_user(user=self.user_2)
         self.client.post(path=self.url_project_1_subscribe,
                          headers={'Authorization': 'Bearer '+tokens['access']})
@@ -240,6 +307,9 @@ class TestContributor(ContributorsTestCase):
         self.assertCountEqual(response.json()["results"], expected)
 
     def test_detail(self):
+        """
+        Method to test if a user can detail contributor.
+        """
         tokens = self.get_tokens_for_user(user=self.user)
         response = self.client.get(path=self.url_project_1_contributor_1_detail,
                                    headers={'Authorization': 'Bearer '+tokens['access']})
@@ -250,10 +320,17 @@ class TestContributor(ContributorsTestCase):
                                            "role": "AUTHOR"})
 
     def test_access_without_token(self):
+        """
+        Method to test if a user can access contributor without a token.
+        """
         response = self.client.get(path=self.url_project_1_contributor_1_detail)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_non_contributor_access(self):
+        """
+        Method to test if a user can access a project without subscribing to it before and after
+        subscription.
+        """
         tokens = self.get_tokens_for_user(user=self.user_3)
         response = self.client.get(path=self.url_project_1_detail,
                                    headers={'Authorization': 'Bearer ' + tokens['access']})
@@ -272,6 +349,9 @@ class TestContributor(ContributorsTestCase):
 class IssuesTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
+        """
+        Method to setup test data.
+        """
         cls.user = User.objects.create(username='Benoit',
                                        is_active=True,
                                        age=46,
@@ -349,6 +429,14 @@ class IssuesTestCase(APITestCase):
 
     @staticmethod
     def get_issue_list_data(project: Project) -> list[dict]:
+        """
+        Method to get a list of issues data from a project.
+        Args:
+            project (Project): The project.
+
+        Returns:
+            The list of issues data dictionaries.
+        """
         return [
             {
                 'id': issue.pk,
@@ -357,7 +445,16 @@ class IssuesTestCase(APITestCase):
         ]
 
     @staticmethod
-    def get_issues(projects: list[Project], user) -> list[dict]:
+    def get_issues(projects: list[Project], user: User) -> list[dict]:
+        """
+        Method to get a list of issues data from a projects list and for a given user.
+        Args:
+            projects (list[Project]): The projects list.
+            user (User): The user.
+
+        Returns:
+            The list of restricted issues data dictionaries.
+        """
         issues = []
         for project in projects:
             if Contributor.objects.filter(project=project, user=user).exists():
@@ -372,6 +469,14 @@ class IssuesTestCase(APITestCase):
 
     @staticmethod
     def get_issue_with_comments(issue: Issue) -> dict:
+        """
+        Method to get an issue data with its comments.
+        Args:
+            issue (Issue): The issue.
+
+        Returns:
+            The issue data dictionary with its comments.
+        """
         return {
             'id': issue.pk,
             'name': issue.name,
@@ -386,6 +491,14 @@ class IssuesTestCase(APITestCase):
 
     @staticmethod
     def get_issue_without_comments(issue: Issue) -> dict:
+        """
+        Method to get an issue data without its comments.
+        Args:
+            issue (Issue): The issue.
+
+        Returns:
+            The issue data dictionary without its comments.
+        """
         return {
             'id': issue.pk,
             'name': issue.name,
@@ -414,6 +527,14 @@ class TestIssue(IssuesTestCase):
 
     @staticmethod
     def get_tokens_for_user(user: AbstractBaseUser):
+        """
+        Method to get tokens for a user.
+        Args:
+            user (AbstractBaseUser): The user.
+
+        Returns:
+            The tokens for a user, or an error is raised otherwise.
+        """
         if not user.is_active:
             raise AuthenticationFailed("User is not active")
 
@@ -424,6 +545,9 @@ class TestIssue(IssuesTestCase):
         }
 
     def test_list(self):
+        """
+        Method that tests if a user can list issues.
+        """
         tokens = self.get_tokens_for_user(user=self.user)
 
         response = self.client.get(path=self.url_issues,
@@ -437,6 +561,9 @@ class TestIssue(IssuesTestCase):
         self.assertCountEqual(response.json()["results"], expected)
 
     def test_list_in_project(self):
+        """
+        Method that tests if a user can list issues in a project.
+        """
         tokens = self.get_tokens_for_user(user=self.user_2)
 
         response = self.client.get(path=self.url_project_1_issues,
@@ -447,6 +574,9 @@ class TestIssue(IssuesTestCase):
         self.assertEqual(response.json()["results"], self.get_issue_list_data(self.project))
 
     def test_detail_in_project(self):
+        """
+        Method that tests if a user can detail a project without its issues.
+        """
         tokens = self.get_tokens_for_user(user=self.user_2)
         response = self.client.get(path=self.url_project_1_issue_1_detail,
                                    headers={'Authorization': 'Bearer '+tokens['access']})
@@ -456,6 +586,9 @@ class TestIssue(IssuesTestCase):
         self.assertEqual(response.json(), self.get_issue_without_comments(issue=self.issue_1))
 
     def test_detail(self):
+        """
+        Method that tests if a user can detail a project with its issues.
+        """
         tokens = self.get_tokens_for_user(user=self.user_2)
         response = self.client.get(path=self.url_issue_1_detail,
                                    headers={'Authorization': 'Bearer '+tokens['access']})
@@ -465,6 +598,9 @@ class TestIssue(IssuesTestCase):
         self.assertEqual(response.json(), self.get_issue_with_comments(issue=self.issue_1))
 
     def test_non_contributor_list_access(self):
+        """
+        Method that tests if a user can list issues in a project if not contributor of it.
+        """
         tokens = self.get_tokens_for_user(user=self.user_3)
         response = self.client.get(path=self.url_project_1_issues,
                                    headers={'Authorization': 'Bearer ' + tokens['access']})
@@ -480,6 +616,9 @@ class TestIssue(IssuesTestCase):
                          self.get_issue_list_data(project=self.project))
 
     def test_non_contributor_detail_access(self):
+        """
+        Method that tests if a user can detail issues in a project if not contributor of it.
+        """
         tokens = self.get_tokens_for_user(user=self.user_3)
         response = self.client.get(path=self.url_project_1_issue_1_detail,
                                    headers={'Authorization': 'Bearer ' + tokens['access']})
@@ -499,6 +638,9 @@ class TestIssue(IssuesTestCase):
 class CommentsTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
+        """
+        Method that sets up the test data.
+        """
         cls.user = User.objects.create(username='Benoit',
                                        is_active=True,
                                        age=46,
@@ -604,6 +746,14 @@ class CommentsTestCase(APITestCase):
 
     @staticmethod
     def get_comment_list_data(comments: list[Comment]) -> list[dict]:
+        """
+        Method that returns a list of comments data dictionaries from the list of comments.
+        Args:
+            comments (list[Comment]): The list of comments.
+
+        Returns:
+            The list of restricted comments data dictionaries.
+        """
         return [
             {
                 'uuid': str(comment.uuid),
@@ -613,6 +763,14 @@ class CommentsTestCase(APITestCase):
 
     @staticmethod
     def get_comment_detail_data(comment: Comment) -> dict:
+        """
+        Method that returns a comment data dictionary from a comment object.
+        Args:
+            comment (Comment): The comment object.
+
+        Returns:
+            The comment data dictionary.
+        """
         return {
             'uuid': str(comment.uuid),
             'description': comment.description,
@@ -623,6 +781,14 @@ class CommentsTestCase(APITestCase):
         }
 
     def get_issue_detail_data_with_comments(self, issue: Issue) -> dict:
+        """
+        Method that returns an issue details with its comments.
+        Args:
+            issue (Issue): The issue object.
+
+        Returns:
+            The issue details dictionary with its comments.
+        """
         return {
             'id': issue.pk,
             'name': issue.name,
@@ -646,6 +812,14 @@ class TestComment(CommentsTestCase):
 
     @staticmethod
     def get_tokens_for_user(user: AbstractBaseUser):
+        """
+        Method that returns a token for the given user.
+        Args:
+            user (AbstractBaseUser): The user.
+
+        Returns:
+            The token for the given user, or an error is raised.
+        """
         if not user.is_active:
             raise AuthenticationFailed("User is not active")
 
@@ -656,6 +830,9 @@ class TestComment(CommentsTestCase):
         }
 
     def test_list(self):
+        """
+        Method that checks if a user can list comments.
+        """
         tokens = self.get_tokens_for_user(user=self.user)
 
         response = self.client.get(path=self.url_issue_1_comments,
@@ -668,6 +845,9 @@ class TestComment(CommentsTestCase):
         self.assertCountEqual(response.json()["results"], expected)
 
     def test_detail(self):
+        """
+        Method that tests if a user can detail comment.
+        """
         comment_pk = str(self.comment_1.uuid)
         url_issue_1_comment_1_detail = reverse("comment-detail",
                                                kwargs={"issue_pk": 1, "pk": comment_pk})
@@ -682,6 +862,10 @@ class TestComment(CommentsTestCase):
         self.assertEqual(data, self.get_comment_detail_data(comment=self.comment_1))
 
     def test_non_contributor_list_access(self):
+        """
+        Method that tests if a user can list comments from an issue if not contributor of the
+        associated project.
+        """
         tokens = self.get_tokens_for_user(user=self.user_3)
         response = self.client.get(path=self.url_issue_1_comments,
                                    headers={'Authorization': 'Bearer ' + tokens['access']})
@@ -699,6 +883,10 @@ class TestComment(CommentsTestCase):
         self.assertCountEqual(response.json()["results"], expected)
 
     def test_non_contributor_detail_access(self):
+        """
+        Method that tests if a user can detail comments from an issue if not contributor of the
+        associated project.
+        """
         comment_pk = str(self.comment_1.uuid)
         url_issue_1_comment_1_detail = reverse("comment-detail",
                                                kwargs={"issue_pk": 1, "pk": comment_pk})
@@ -719,6 +907,9 @@ class TestComment(CommentsTestCase):
         self.assertEqual(data, self.get_comment_detail_data(comment=self.comment_1))
 
     def test_issue_detail_with_comments(self):
+        """
+        Method that tests if a user can detail an issue with its comments.
+        """
         tokens = self.get_tokens_for_user(user=self.user)
 
         response = self.client.get(path=self.url_issue_1_detail,

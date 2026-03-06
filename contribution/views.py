@@ -26,6 +26,11 @@ class MultipleSerializerMixin:
     list_serializer_class = None
 
     def get_serializer_class(self):
+        """
+        Method that gets the serializer according to the action.
+        Returns:
+            The serializer class.
+        """
         if self.action == "create":
             return self.create_serializer_class
         elif self.action == "retrieve" and self.detail_serializer_class is not None:
@@ -48,12 +53,23 @@ class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
     permission_classes = [CustomPermissionOrAdmin]
 
     def get_queryset(self):
+        """
+        Method that gets the queryset of projects.
+        Returns:
+            The queryset of projects.
+        """
         if self.request.user.is_superuser:
             return Project.objects.all()
 
         return Project.objects.filter(active=True).order_by('-id')
 
     def get_serializer_class(self):
+        """
+        Method that gets the project serializer according to the action or the contributor list
+        serializer
+        Returns:
+            The project serializer class or the contributor list serializer.
+        """
         if self.action == 'contributor':
             if self.request.method == 'GET':
                 return ContributorListSerializer
@@ -62,6 +78,15 @@ class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
 
     @action(detail=True, methods=['POST'], permission_classes=[IsAdminUser])
     def disable(self, request: HttpRequest, pk: int) -> Response:
+        """
+        Method that disables a project by admin user.
+        Args:
+            request (HttpRequest): The request object.
+            pk (int): The id of the project to disable.
+
+        Returns:
+            The response object.
+        """
         try:
             project = Project.objects.get(pk=pk)
         except Project.DoesNotExist:
@@ -72,6 +97,15 @@ class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
 
     @action(detail=True, methods=['POST'], permission_classes=[IsAdminUser])
     def enable(self, request: HttpRequest, pk: int) -> Response:
+        """
+        Method that enables a project by admin user.
+        Args:
+            request (HttpRequest): The request object.
+            pk (int): The id of the project to enable.
+
+        Returns:
+            The response object.
+        """
         try:
             project = Project.objects.get(pk=pk)
         except Project.DoesNotExist:
@@ -82,6 +116,15 @@ class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def subscribe(self, request: HttpRequest, pk: int) -> Response:
+        """
+        Method to subscribe a project
+        Args:
+            request (HttpRequest): The request object.
+            pk (int): The id of the project to subscribe.
+
+        Returns:
+            The response object : success or conflict if the user is already contributor.
+        """
         project = self.get_object()
         user = request.user
 
@@ -95,6 +138,16 @@ class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def unsubscribe(self, request: HttpRequest, pk: int) -> Response:
+        """
+        Method to unsubscribe a project
+        Args:
+            request (HttpRequest): The request object.
+            pk (int): The id of the project to unsubscribe.
+
+        Returns:
+            The response object : success or not found error if the user is not contributor of the
+            project.
+        """
         project = self.get_object()
         user = request.user
 
@@ -121,6 +174,11 @@ class ContributorViewSet(MultipleSerializerMixin, ModelViewSet):
     permission_classes = [CustomContributorPermissionOrAdmin]
 
     def get_queryset(self):
+        """
+        Method that gets the queryset of contributors.
+        Returns:
+            The queryset of contributors.
+        """
         if self.request.user.is_superuser:
             return Contributor.objects.all().order_by('-id')
 
@@ -133,6 +191,11 @@ class ContributorViewSet(MultipleSerializerMixin, ModelViewSet):
         return queryset
 
     def get_serializer_class(self):
+        """
+        Method that gets the contributor serializer according to the action.
+        Returns:
+            The contributor serializer class.
+        """
         if self.action == 'list':
             return ContributorListSerializer
 
@@ -152,6 +215,11 @@ class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
     permission_classes = [CustomPermissionOrAdmin]
 
     def get_serializer_class(self):
+        """
+        Method that gets the issue serializer according to the action and request method.
+        Returns:
+            The issue serializer class.
+        """
         if self.action == 'comment' and self.request.method == 'POST':
             return CommentCreateSerializer
 
@@ -161,6 +229,11 @@ class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
         return super().get_serializer_class()
 
     def get_serializer_context(self):
+        """
+        Method that sets the request context for an issue.
+        Returns:
+            The request context.
+        """
         context = super().get_serializer_context()
         if 'project_pk' in self.kwargs:
             context["project"] = Project.objects.get(pk=self.kwargs['project_pk'])
@@ -169,6 +242,11 @@ class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
         return context
 
     def get_queryset(self):
+        """
+        Method that gets the queryset of issues.
+        Returns:
+            The queryset of issues.
+        """
         if self.request.user.is_superuser:
             return Issue.objects.all()
 
@@ -185,6 +263,11 @@ class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
                                     active=True).distinct().order_by('-id')
 
     def perform_create(self, serializer):
+        """
+        Method that creates a new issue with serializer data for the given project id in kwargs.
+        Args:
+            serializer (Serializer): The serializer object.
+        """
         try:
             project = Project.objects.get(pk=self.kwargs["project_pk"])
             serializer.save(
@@ -196,23 +279,41 @@ class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
 
     @action(detail=True, methods=['POST'], permission_classes=[IsAdminUser])
     def disable(self, request, pk):
+        """
+        Method that disables an issue by admin user.
+        Args:
+            request (HttpRequest): The request object.
+            pk (int): The id of the issue to disable.
+
+        Returns:
+            The response object : success or not found error.
+        """
         try:
             issue = Issue.objects.get(pk=pk)
         except Issue.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         issue.disable()
-        return Response()
+        return Response({'status': 'Succés'}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['POST'], permission_classes=[IsAdminUser])
     def enable(self, request, pk):
+        """
+        Method that enables an issue by admin user.
+        Args:
+            request (HttpRequest): The request object.
+            pk (int): The id of the issue to enable.
+
+        Returns:
+            The response object : success or not found error.
+        """
         try:
             issue = Issue.objects.get(pk=pk)
         except Issue.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         issue.enable()
-        return Response()
+        return Response({'status': 'Succés'}, status=status.HTTP_200_OK)
 
 
 class CommentViewSet(MultipleSerializerMixin, ModelViewSet):
@@ -225,6 +326,11 @@ class CommentViewSet(MultipleSerializerMixin, ModelViewSet):
     permission_classes = [CustomPermissionOrAdmin]
 
     def get_queryset(self):
+        """
+        Method that gets the queryset of comments.
+        Returns:
+            The queryset of comments.
+        """
         issue_pk = self.kwargs.get('issue_pk')
         queryset = Comment.objects.filter(issue__id=issue_pk,
                                           active=True).order_by('-created_time')
@@ -235,6 +341,11 @@ class CommentViewSet(MultipleSerializerMixin, ModelViewSet):
         return queryset
 
     def get_serializer_class(self):
+        """
+        Method that gets the comment serializer according to the request method or action.
+        Returns:
+            The serializer class.
+        """
         if self.request.method == 'POST':
             return CommentCreateSerializer
         elif self.request.method == 'GET':
@@ -246,6 +357,11 @@ class CommentViewSet(MultipleSerializerMixin, ModelViewSet):
         return super().get_serializer_class()
 
     def perform_create(self, serializer):
+        """
+        Method that creates a new comment with serializer data from the issue id in kwargs.
+        Args:
+            serializer ():
+        """
         issue = Issue.objects.get(pk=self.kwargs["issue_pk"])
         serializer.save(
             issue=issue,

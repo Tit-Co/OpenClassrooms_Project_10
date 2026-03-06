@@ -11,6 +11,14 @@ class ProjectCreateSerializer(ModelSerializer):
         fields = ('name', 'description', 'type')
 
     def to_internal_value(self, data: Any) -> Any:
+        """
+        Method that strips the data and converts them to upper case.
+        Args:
+            data (Any): data to be converted
+
+        Returns:
+            The converted data.
+        """
         data = data.copy()
 
         if 'type' in data:
@@ -19,6 +27,14 @@ class ProjectCreateSerializer(ModelSerializer):
         return super().to_internal_value(data)
 
     def create(self, validated_data: Any) -> Project:
+        """
+        Method to create a new project.
+        Args:
+            validated_data (Any): data from the project to create.
+
+        Returns:
+            The created project.
+        """
         user = self.context['request'].user
         project = Project.objects.create(
             name=validated_data['name'],
@@ -45,7 +61,15 @@ class ProjectDetailSerializer(ModelSerializer):
         fields = ['id', 'name', 'description', 'type', 'author', 'created_time', 'issues']
 
     @staticmethod
-    def get_issues(instance: Issue) -> list:
+    def get_issues(instance: Project) -> list:
+        """
+        Method that returns a queryset of issues associated with the project.
+        Args:
+            instance (Project): the project to get the issues from.
+
+        Returns:
+            The serialized list of issues associated with the project.
+        """
         queryset = Issue.objects.filter(project=instance, active=True)
         serializer = IssueDetailSerializer(queryset, many=True)
         return serializer.data
@@ -70,6 +94,14 @@ class IssueCreateSerializer(ModelSerializer):
         fields = ['name', 'priority', 'status', 'attribution', 'tag']
 
     def to_internal_value(self, data: Any) -> Any:
+        """
+        Method that strips the data and converts them to upper case.
+        Args:
+            data (Any): data to be converted
+
+        Returns:
+            The converted data.
+        """
         data = data.copy()
 
         if 'priority' in data:
@@ -107,11 +139,24 @@ class IssueDetailSerializer(ModelSerializer):
 
     @staticmethod
     def get_comments(instance: Issue) -> list:
+        """
+        Method that returns a queryset of comments associated with the issue.
+        Args:
+            instance (Issue): the issue to get the comments from.
+
+        Returns:
+            The serialized list of comments associated with the issue.
+        """
         queryset = Comment.objects.filter(issue=instance, active=True)
         serializer = CommentDetailSerializer(queryset, many=True)
         return serializer.data
 
     def get_fields(self):
+        """
+        Method that update the field for comments associated with the issue if in project context.
+        Returns:
+        The field for comments associated with the issue or None.
+        """
         fields = super().get_fields()
 
         if self.context.get("project") is not None:

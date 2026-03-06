@@ -17,6 +17,11 @@ class MultipleSerializerMixin:
     list_serializer_class = None
 
     def get_serializer_class(self):
+        """
+        Method to get the serializer class.
+        Returns:
+            The serializer class according to the action.
+        """
         if self.action == "create":
             return self.create_serializer_class
         elif self.action == "retrieve" and self.detail_serializer_class is not None:
@@ -39,6 +44,11 @@ class UserViewSet(MultipleSerializerMixin, ModelViewSet):
     permission_classes = [CustomUserPermissionOrAdmin]
 
     def get_queryset(self):
+        """
+        Method to get the queryset of users or a particular user according to the given id.
+        Returns:
+            The queryset.
+        """
         if self.request.user.is_superuser:
             return User.objects.all()
 
@@ -51,6 +61,15 @@ class UserViewSet(MultipleSerializerMixin, ModelViewSet):
 
     @action(detail=True, methods=['POST'], permission_classes=[IsAdminUser])
     def disable(self, request, pk):
+        """
+        Method to disable a user by admin user.
+        Args:
+            request (HttpRequest): The request.
+            pk (int): The id of the user to disable.
+
+        Returns:
+            HttpResponse: The response.
+        """
         try:
             user = User.objects.get(pk=pk)
         except User.DoesNotExist:
@@ -61,6 +80,15 @@ class UserViewSet(MultipleSerializerMixin, ModelViewSet):
 
     @action(detail=True, methods=['POST'], permission_classes=[IsAdminUser])
     def enable(self, request, pk):
+        """
+        Method to enable a user by admin user.
+        Args:
+            request (HttpRequest): The request.
+            pk (int): The id of the user to enable.
+
+        Returns:
+            HttpResponse: The response.
+        """
         try:
             user = User.objects.get(pk=pk)
         except User.DoesNotExist:
