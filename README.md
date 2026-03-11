@@ -37,7 +37,7 @@ git clone https://github.com/Tit-Co/OpenClassrooms_Project_10.git
 
 ### - Create a virtual environment and dependencies :
 
-### Option 1 - with [uv](https://docs.astral.sh/uv/)
+#### Option 1 - with [uv](https://docs.astral.sh/uv/)
 
 `uv` is an environment and dependencies manager.
 
@@ -45,7 +45,7 @@ git clone https://github.com/Tit-Co/OpenClassrooms_Project_10.git
 
 `uv sync`
 
-### Option 2 - with pip
+#### Option 2 - with pip
 
 #### - Install the virtual env :
 
@@ -57,7 +57,7 @@ Or
 `env\Scripts\activate` on Windows  
 
 
-### Option 3 with [Poetry](https://python-poetry.org/docs/)
+#### Option 3 with [Poetry](https://python-poetry.org/docs/)
 
 `Poetry` is a tool for dependency management and packaging in Python.
 
