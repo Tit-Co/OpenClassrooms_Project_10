@@ -27,31 +27,31 @@ The application must:
 
 ## INSTALLATION
 
-### - Clone the repository :
+- ### Clone the repository :
 ```
 git clone https://github.com/Tit-Co/OpenClassrooms_Project_10.git
 ```
 
-### - Navigate into the project directory :
+- ### Navigate into the project directory :
 `cd OpenClassrooms_Project_10`
 
-### - Create a virtual environment and dependencies :
+- ### Create a virtual environment and dependencies :
 
 #### Option 1 - with [uv](https://docs.astral.sh/uv/)
 
 `uv` is an environment and dependencies manager.
 
-#### - Install environment and dependencies
+- #### Install environment and dependencies
 
 `uv sync`
 
 #### Option 2 - with pip
 
-#### - Install the virtual env :
+- #### Install the virtual env :
 
 `python -m venv env`
 
-#### - Activate the virtual env :
+- #### Activate the virtual env :
 `source env/bin/activate`  
 Or  
 `env\Scripts\activate` on Windows  
@@ -61,13 +61,13 @@ Or
 
 `Poetry` is a tool for dependency management and packaging in Python.
 
-#### - Install the virtual env :
+- #### Install the virtual env :
 `py -3.14 -m venv env`
 
-#### - Activate the virtual env :
+- #### Activate the virtual env :
 `poetry env activate`
 
-### - Install dependencies 
+- ### Install dependencies 
 #### Option 1 - with [uv](https://docs.astral.sh/uv/)
 `uv pip install -U -r requirements.txt`
 
